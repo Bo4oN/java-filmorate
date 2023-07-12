@@ -24,6 +24,7 @@ public class FilmController {
         }
         return film;
     }
+
     @PutMapping("/films")
     public Film updateFilm(@RequestBody Film film) {
         log.info("Получен запрос на изменение фильма.");
@@ -42,11 +43,13 @@ public class FilmController {
         }
         return film;
     }
+
     @GetMapping("/films")
     public List<Film> getFilms() {
         List<Film> list = new ArrayList<>(films.values());
         return list;
     }
+
     private void validationFilm(Film film) {
         if (film.getName().isBlank()) {
             log.debug("Фильм не имеет названия.");

@@ -26,6 +26,7 @@ public class UserController {
         }
         return user;
     }
+
     @PutMapping("/users")
     public User updateUser(@RequestBody User user) {
         log.info("Получен запрос на обновление пользователя.");
@@ -44,11 +45,13 @@ public class UserController {
         }
         return user;
     }
+
     @GetMapping("/users")
     public List<User> getUsers() {
         List<User> list = new ArrayList<>(users.values());
         return list;
     }
+
     private void validationUser(@Valid User user) {
         if (!user.getEmail().contains("@") || user.getEmail().isBlank()) {
             log.debug("У пользователя некорректный Email.");
