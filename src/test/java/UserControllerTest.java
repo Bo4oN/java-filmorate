@@ -6,9 +6,9 @@ import java.time.LocalDate;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-@SpringBootTest
+@SpringBootTest(classes = UserController.class)
 class UserControllerTest {
-    UserController controller = new UserController();
+    private UserController controller = new UserController();
 
     @Test
     void addUser() {

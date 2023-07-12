@@ -6,9 +6,9 @@ import java.time.LocalDate;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-@SpringBootTest
+@SpringBootTest(classes = FilmController.class)
 class FilmControllerTest {
-    FilmController controller = new FilmController();
+    private FilmController controller = new FilmController();
 
     @Test
     void addFilm() {
