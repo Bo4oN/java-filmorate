@@ -1,3 +1,5 @@
+package ru.yandex.practicum.filmorate;
+
 import controllers.FilmController;
 import model.Film;
 import org.junit.jupiter.api.Test;
@@ -31,18 +33,18 @@ class FilmControllerTest {
 
         final RuntimeException exception = assertThrows(
                 RuntimeException.class, () -> controller.addFilm(film2));
-        assertEquals("ValidationException: Дата премьеры фильма не может быть раньше 28 декабря 1985г.",
+        assertEquals("exceptions.ValidationException: Дата премьеры фильма не может быть раньше 28 декабря 1985г.",
                 exception.getMessage());
 
         final RuntimeException exception1 = assertThrows(
                 RuntimeException.class, () -> controller.addFilm(film3));
-        assertEquals("ValidationException: Название фильма не может быть пустым.",
+        assertEquals("exceptions.ValidationException: Название фильма не может быть пустым.",
                 exception1.getMessage());
 
         final RuntimeException exception2 = assertThrows(
                 RuntimeException.class,
                 () -> controller.addFilm(film4));
-        assertEquals("ValidationException: Продолжительность фильма не может быть отрицательной.",
+        assertEquals("exceptions.ValidationException: Продолжительность фильма не может быть отрицательной.",
                 exception2.getMessage());
     }
 }

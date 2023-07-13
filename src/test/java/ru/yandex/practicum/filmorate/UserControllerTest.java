@@ -1,3 +1,5 @@
+package ru.yandex.practicum.filmorate;
+
 import controllers.UserController;
 import model.User;
 
@@ -35,17 +37,17 @@ class UserControllerTest {
 
         final RuntimeException exception = assertThrows(
                 RuntimeException.class, () -> controller.addUser(user2));
-        assertEquals("ValidationException: Электронная почта не может быть пустой и должна содержать символ @.",
+        assertEquals("exceptions.ValidationException: Электронная почта не может быть пустой и должна содержать символ @.",
                 exception.getMessage());
 
         final RuntimeException exception1 = assertThrows(
                 RuntimeException.class, () -> controller.addUser(user3));
-        assertEquals("ValidationException: Логин не может быть пустым и содержать пробелы.",
+        assertEquals("exceptions.ValidationException: Логин не может быть пустым и содержать пробелы.",
                 exception1.getMessage());
 
         final RuntimeException exception2 = assertThrows(
                 RuntimeException.class, () -> controller.addUser(user4));
-        assertEquals("ValidationException: Дата рождения не может быть в будущем.",
+        assertEquals("exceptions.ValidationException: Дата рождения не может быть в будущем.",
                 exception2.getMessage());
 
         controller.addUser(user5);
