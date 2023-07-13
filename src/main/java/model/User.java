@@ -13,8 +13,8 @@ public class User {
     private int id;
     @Email
     private String email;
+    private String name;
     @NotBlank
     private String login;
-    private String name;
     private LocalDate birthday;
 }

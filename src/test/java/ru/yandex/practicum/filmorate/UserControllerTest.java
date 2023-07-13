@@ -17,19 +17,19 @@ class UserControllerTest {
 
     @Test
     void addUser() {
-        User user = new User(1, "qwerty@mail.ru", "login", "Иван",
+        User user = new User(1, "qwerty@mail.ru", "Иван", "login",
                     LocalDate.of(2000, 02, 12));
 
-        User user2 = new User(2, "qwerty", "login", "Иван",
+        User user2 = new User(2, "qwerty", "Иван", "login",
                     LocalDate.of(2000, 02, 12));
 
-        User user3 = new User(3, "qwerty@mail.ru", "log in", "Иван",
+        User user3 = new User(3, "qwerty@mail.ru", "иван", "log in",
                 LocalDate.of(2000, 02, 12));
 
-        User user4 = new User(3, "qwerty@mail.ru", "login", "Иван",
+        User user4 = new User(3, "qwerty@mail.ru", "Иван", "login",
                 LocalDate.of(2040,  10, 12));
 
-        User user5 = new User(1, "qwerty@mail.ru", "login", "",
+        User user5 = new User(1, "qwerty@mail.ru", "", "login",
                 LocalDate.of(2000, 02, 12));
 
         controller.addUser(user);

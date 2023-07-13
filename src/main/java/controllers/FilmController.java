@@ -17,12 +17,13 @@ public class FilmController {
     private HashMap<Integer, Film> films = new HashMap<>();
     private static final LocalDate BIRTHDAY_MOVIE = LocalDate.of(1895, 12, 28);
 
+    @ResponseBody
     @PostMapping("/films")
     public Film addFilm(@RequestBody Film film) {
         log.info("Получен запрос на добовление фильма.");
         try {
             validationFilm(film);
-            log.info("Добавлен фильм - " + film.toString());
+            log.info("Добавлен фильм - " + film);
         } catch (ValidationException e) {
             log.debug("Фильм не прошел валидацию.", e);
             throw new RuntimeException(e);
@@ -30,6 +31,7 @@ public class FilmController {
         return film;
     }
 
+    @ResponseBody
     @PutMapping("/films")
     public Film updateFilm(@RequestBody Film film) {
         log.info("Получен запрос на изменение фильма.");
@@ -49,6 +51,7 @@ public class FilmController {
         return film;
     }
 
+    @ResponseBody
     @GetMapping("/films")
     public List<Film> getFilms() {
         List<Film> list = new ArrayList<>(films.values());

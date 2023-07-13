@@ -17,6 +17,7 @@ import javax.validation.Valid;
 public class UserController {
     private HashMap<Integer, User> users = new HashMap<>();
 
+    @ResponseBody
     @PostMapping("/users")
     public User addUser(@RequestBody User user) {
         log.info("Получен запрос на добовление пользователя.");
@@ -30,6 +31,7 @@ public class UserController {
         return user;
     }
 
+    @ResponseBody
     @PutMapping("/users")
     public User updateUser(@RequestBody User user) {
         log.info("Получен запрос на обновление пользователя.");
@@ -49,6 +51,7 @@ public class UserController {
         return user;
     }
 
+    @ResponseBody
     @GetMapping("/users")
     public List<User> getUsers() {
         List<User> list = new ArrayList<>(users.values());
