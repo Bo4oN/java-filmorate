@@ -1,3 +1,8 @@
+package controllers;
+
+import exceptions.ValidationException;
+import model.Film;
+
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.HashMap;
