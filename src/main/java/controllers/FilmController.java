@@ -19,7 +19,7 @@ public class FilmController {
     private static final LocalDate BIRTHDAY_MOVIE = LocalDate.of(1895, 12, 28);
 
     @ResponseBody
-    @PostMapping("/films")
+    @PostMapping(value = "/films")
     public Film addFilm(@RequestBody Film film) {
         log.info("Получен запрос на добовление фильма.");
         try {

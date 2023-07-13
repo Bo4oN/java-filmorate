@@ -12,14 +12,15 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
 
-@RestController
 @Slf4j
+@RequestMapping("/users")
+@RestController
 public class UserController {
     private HashMap<Integer, User> users = new HashMap<>();
     private int nextId = 1;
 
     @ResponseBody
-    @PostMapping("/users")
+    @PostMapping
     public User addUser(@RequestBody User user) {
         log.info("Получен запрос на добовление пользователя.");
         try {
@@ -33,7 +34,7 @@ public class UserController {
     }
 
     @ResponseBody
-    @PutMapping("/users")
+    @PutMapping
     public User updateUser(@RequestBody User user) {
         log.info("Получен запрос на обновление пользователя.");
         if (users.containsKey(user.getId())) {
@@ -53,7 +54,7 @@ public class UserController {
     }
 
     @ResponseBody
-    @GetMapping("/users")
+    @GetMapping
     public List<User> getUsers() {
         List<User> list = new ArrayList<>(users.values());
         return list;
