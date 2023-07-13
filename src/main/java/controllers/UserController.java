@@ -16,6 +16,7 @@ import javax.validation.Valid;
 @Slf4j
 public class UserController {
     private HashMap<Integer, User> users = new HashMap<>();
+    private int nextId = 1;
 
     @ResponseBody
     @PostMapping("/users")
@@ -74,8 +75,8 @@ public class UserController {
         } else if (user.getName().isBlank()) {
             user.setName(user.getLogin());
             log.info("Имя пользователя не добавлено, оно становится равно логину - ", user.getLogin());
-        } else {
-            users.put(user.getId(), user);
         }
+        user.setId(nextId++);
+        users.put(user.getId(), user);
     }
 }

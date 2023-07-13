@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.*;
 @Slf4j
 public class FilmController {
     private HashMap<Integer, Film> films = new HashMap<>();
+    private int nextId = 1;
     private static final LocalDate BIRTHDAY_MOVIE = LocalDate.of(1895, 12, 28);
 
     @ResponseBody
@@ -74,9 +75,8 @@ public class FilmController {
         } else if (film.getDuration().isNegative()) {
             log.debug("Отрицательное значение в продолжительности фильма.");
             throw new ValidationException("Продолжительность фильма не может быть отрицательной.");
-
-        } else {
-            films.put(film.getId(), film);
         }
+        film.setId(nextId++);
+        films.put(film.getId(), film);
     }
 }
