@@ -16,7 +16,7 @@ import javax.validation.Valid;
 @RequestMapping("/users")
 @RestController
 public class UserController {
-    private HashMap<Integer, User> users = new HashMap<>();
+    private final HashMap<Integer, User> users = new HashMap<>();
     private int nextId = 1;
 
     @ResponseBody
