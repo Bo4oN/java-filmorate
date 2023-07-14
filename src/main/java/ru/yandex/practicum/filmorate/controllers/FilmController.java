@@ -1,4 +1,4 @@
-package controllers;
+package ru.yandex.practicum.filmorate.controllers;
 
 import exceptions.ValidationException;
 import model.Film;

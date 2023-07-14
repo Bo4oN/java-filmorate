@@ -1,6 +1,6 @@
 package ru.yandex.practicum.filmorate;
 
-import controllers.FilmController;
+import ru.yandex.practicum.filmorate.controllers.FilmController;
 import model.Film;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;

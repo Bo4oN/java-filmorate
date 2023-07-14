@@ -1,4 +1,4 @@
-package controllers;
+package ru.yandex.practicum.filmorate.controllers;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
