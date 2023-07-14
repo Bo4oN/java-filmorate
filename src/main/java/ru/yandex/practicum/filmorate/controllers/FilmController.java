@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.*;
 @Slf4j
 public class FilmController {
     private final HashMap<Integer, Film> films = new HashMap<>();
-    //private int nextId = 1;
+    private int nextId = 1;
     private static final LocalDate BIRTHDAY_MOVIE = LocalDate.of(1895, 12, 28);
 
     @ResponseBody
@@ -23,7 +23,7 @@ public class FilmController {
     public Film addFilm(@RequestBody Film film) {
         log.info("Получен запрос на добовление фильма.");
         validationFilm(film);
-        //film.setId(nextId++);
+        film.setId(nextId++);
         films.put(film.getId(), film);
         log.info("Добавлен фильм - " + film);
         return film;
