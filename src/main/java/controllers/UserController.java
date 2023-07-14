@@ -21,10 +21,12 @@ public class UserController {
 
     @ResponseBody
     @PostMapping
-    public User addUser(@RequestBody User user) {
+    public User addUser(@Valid @RequestBody User user) {
         log.info("Получен запрос на добовление пользователя.");
         try {
             validationUser(user);
+            user.setId(nextId++);
+            users.put(user.getId(), user);
             log.info("Пользователь успешно добавлен.");
         } catch (ValidationException e) {
             log.debug("Пользователь не прошел валидацию.");
@@ -35,11 +37,12 @@ public class UserController {
 
     @ResponseBody
     @PutMapping
-    public User updateUser(@RequestBody User user) {
+    public User updateUser(@Valid @RequestBody User user) {
         log.info("Получен запрос на обновление пользователя.");
         if (users.containsKey(user.getId())) {
             try {
                 validationUser(user);
+                users.put(user.getId(), user);
                 log.info("Пользователь успешно изменен.");
             } catch (ValidationException e) {
                 log.debug("Пользователь не прошел валидацию.");
@@ -60,24 +63,25 @@ public class UserController {
         return list;
     }
 
-    private void validationUser(@Valid User user) {
-        if (!user.getEmail().contains("@") || user.getEmail().isBlank()) {
+    private void validationUser(User user) {
+        if (!user.getEmail().contains("@") || user.getEmail().isBlank() || user.getEmail() == null) {
             log.debug("У пользователя некорректный Email.");
             throw new ValidationException("Электронная почта не может быть пустой и должна содержать символ @.");
+        }
 
-        } else if (user.getLogin().isBlank() || user.getLogin().contains(" ")) {
+        if (user.getLogin().isBlank() || user.getLogin().contains(" ")) {
             log.debug("Недопустимые символы в логине пользователя.");
             throw new ValidationException("Логин не может быть пустым и содержать пробелы.");
+        }
 
-        } else if (user.getBirthday().isAfter(LocalDate.now())) {
+        if (user.getBirthday().isAfter(LocalDate.now())) {
             log.debug("Невалидная дата рождения пользователя");
             throw new ValidationException("Дата рождения не может быть в будущем.");
+        }
 
-        } else if (user.getName().isBlank()) {
+        if (user.getName().isBlank() || user.getName() == null) {
             user.setName(user.getLogin());
             log.info("Имя пользователя не добавлено, оно становится равно логину - ", user.getLogin());
         }
-        user.setId(nextId++);
-        users.put(user.getId(), user);
     }
 }
