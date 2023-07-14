@@ -17,16 +17,16 @@ class FilmControllerTest {
     @Test
     void addFilm() {
         Film film1 = new Film(1, "фильм", "des",
-                LocalDate.of(1995, 2, 9), Duration.ofMinutes(100));
+                LocalDate.of(1995, 2, 9), 100L);
 
         Film film2 = new Film(2, "фильм", "des",
-                LocalDate.of(1895, 12, 27), Duration.ofMinutes(100));
+                LocalDate.of(1895, 12, 27), 100L);
 
         Film film3 = new Film(3, "", "des",
-                LocalDate.of(1995, 2, 9), Duration.ofMinutes(100));
+                LocalDate.of(1995, 2, 9), 100L);
 
         Film film4 = new Film(1, "фильм", "des",
-                LocalDate.of(1995, 2, 9), Duration.ofMinutes(-100));
+                LocalDate.of(1995, 2, 9), -100L);
 
         controller.addFilm(film1);
         assertEquals(film1, controller.getFilms().get(0), "Возвращаемый фильм не совпадает с сохраняемым.");

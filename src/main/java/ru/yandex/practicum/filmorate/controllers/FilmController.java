@@ -66,7 +66,7 @@ public class FilmController {
             throw new ValidationException("Дата премьеры фильма не может быть раньше 28 декабря 1985г.");
         }
 
-        if (film.getDuration().isNegative()) {
+        if (film.getDuration() <= 0) {
             log.debug("Отрицательное значение в продолжительности фильма.");
             throw new ValidationException("Продолжительность фильма не может быть отрицательной.");
         }
