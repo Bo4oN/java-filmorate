@@ -1,4 +1,4 @@
-package model;
+package ru.yandex.practicum.filmorate.model;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

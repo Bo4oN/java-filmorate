@@ -1,7 +1,7 @@
 package ru.yandex.practicum.filmorate.controllers;
 
 import exceptions.ValidationException;
-import model.Film;
+import ru.yandex.practicum.filmorate.model.Film;
 
 import java.time.LocalDate;
 import java.util.ArrayList;

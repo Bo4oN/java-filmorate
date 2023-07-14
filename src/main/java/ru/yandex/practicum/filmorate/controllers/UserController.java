@@ -7,7 +7,7 @@ import java.util.List;
 
 import exceptions.ValidationException;
 import lombok.extern.slf4j.Slf4j;
-import model.User;
+import ru.yandex.practicum.filmorate.model.User;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
@@ -68,7 +68,8 @@ public class UserController {
             throw new ValidationException("Дата рождения не может быть в будущем.");
         }
 
-        if (user.getName().isBlank() || user.getName() == null) {
+        if (user.getName() == null || user.getName().isBlank()) {
+            log.debug("Мы тут {} {}", user.getName(), user.getLogin());
             user.setName(user.getLogin());
             log.info("Имя пользователя не добавлено, оно становится равно логину - '{}'", user.getLogin());
         }
