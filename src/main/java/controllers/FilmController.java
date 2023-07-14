@@ -39,12 +39,12 @@ public class FilmController {
         if (films.containsKey(film.getId())) {
             try {
                 validationFilm(film);
-                log.info("Добавлен фильм - ", film);
+                log.info("Добавлен фильм - '{}'", film);
             } catch (ValidationException e) {
                 log.debug("Фильм не прошел валидацию.", e);
                 throw new RuntimeException(e);
             }
-            log.info("Фильм успешно изменен на - ", film);
+            log.info("Фильм успешно изменен на - '{}'", film);
         } else {
             log.debug("Обновляется несуществующий фильм.");
             throw new RuntimeException("Фильм с таким ID не был добавлен.");
@@ -55,8 +55,7 @@ public class FilmController {
     @ResponseBody
     @GetMapping("/films")
     public List<Film> getFilms() {
-        List<Film> list = new ArrayList<>(films.values());
-        return list;
+        return new ArrayList<>(films.values());
     }
 
     private void validationFilm(Film film) {

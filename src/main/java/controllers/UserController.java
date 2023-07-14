@@ -23,15 +23,10 @@ public class UserController {
     @PostMapping
     public User addUser(@Valid @RequestBody User user) {
         log.info("Получен запрос на добовление пользователя.");
-        try {
-            validationUser(user);
-            user.setId(nextId++);
-            users.put(user.getId(), user);
-            log.info("Пользователь успешно добавлен.");
-        } catch (ValidationException e) {
-            log.debug("Пользователь не прошел валидацию.");
-            throw new RuntimeException(e);
-        }
+        validationUser(user);
+        user.setId(nextId++);
+        users.put(user.getId(), user);
+        log.info("Пользователь успешно добавлен.");
         return user;
     }
 
@@ -40,17 +35,12 @@ public class UserController {
     public User updateUser(@Valid @RequestBody User user) {
         log.info("Получен запрос на обновление пользователя.");
         if (users.containsKey(user.getId())) {
-            try {
                 validationUser(user);
                 users.put(user.getId(), user);
                 log.info("Пользователь успешно изменен.");
-            } catch (ValidationException e) {
-                log.debug("Пользователь не прошел валидацию.");
-                throw new RuntimeException(e);
-            }
         } else {
-            log.debug("Обновляется не добавленный пользователь, его ID - ", user.getId());
-            throw new RuntimeException("Не добавлен пользователь с ID - " + user.getId());
+            log.debug("Обновляется не добавленный пользователь, его ID - '{}'", user.getId());
+            throw new ValidationException("Не добавлен пользователь с ID - " + user.getId());
 
         }
         return user;
@@ -59,8 +49,7 @@ public class UserController {
     @ResponseBody
     @GetMapping
     public List<User> getUsers() {
-        List<User> list = new ArrayList<>(users.values());
-        return list;
+        return new ArrayList<>(users.values());
     }
 
     private void validationUser(User user) {
@@ -81,7 +70,7 @@ public class UserController {
 
         if (user.getName().isBlank() || user.getName() == null) {
             user.setName(user.getLogin());
-            log.info("Имя пользователя не добавлено, оно становится равно логину - ", user.getLogin());
+            log.info("Имя пользователя не добавлено, оно становится равно логину - '{}'", user.getLogin());
         }
     }
 }
