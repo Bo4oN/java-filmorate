@@ -17,14 +17,14 @@ import javax.validation.Valid;
 @RestController
 public class UserController {
     private final HashMap<Integer, User> users = new HashMap<>();
-    private int nextId = 1;
+    //private int nextId = 1;
 
     @ResponseBody
     @PostMapping
     public User addUser(@Valid @RequestBody User user) {
         log.info("Получен запрос на добовление пользователя.");
         validationUser(user);
-        user.setId(nextId++);
+        //user.setId(nextId++);
         users.put(user.getId(), user);
         log.info("Пользователь успешно добавлен.");
         return user;
