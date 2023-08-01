@@ -15,8 +15,8 @@ import javax.validation.Valid;
 @Slf4j
 @RequestMapping("/users")
 @RestController
-public class UserController {
-    private final HashMap<Integer, User> users = new HashMap<>();
+public class UserController extends SimpleController {
+    /*private final HashMap<Integer, User> users = new HashMap<>();
     private int nextId = 1;
 
     @ResponseBody
@@ -73,5 +73,5 @@ public class UserController {
             user.setName(user.getLogin());
             log.info("Имя пользователя не добавлено, оно становится равно логину - '{}'", user.getLogin());
         }
-    }
+    }*/
 }

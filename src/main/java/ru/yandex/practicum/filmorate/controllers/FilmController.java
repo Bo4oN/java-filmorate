@@ -12,14 +12,15 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
+@RequestMapping("/films")
 @Slf4j
-public class FilmController {
+public class FilmController /* extends SimpleController */ {
     private final HashMap<Integer, Film> films = new HashMap<>();
     private int nextId = 1;
     private static final LocalDate BIRTHDAY_MOVIE = LocalDate.of(1895, 12, 28);
 
     @ResponseBody
-    @PostMapping(value = "/films")
+    @PostMapping
     public Film addFilm(@RequestBody Film film) {
         log.info("Получен запрос на добовление фильма.");
         validationFilm(film);
@@ -30,7 +31,7 @@ public class FilmController {
     }
 
     @ResponseBody
-    @PutMapping("/films")
+    @PutMapping
     public Film updateFilm(@RequestBody Film film) {
         log.info("Получен запрос на изменение фильма.");
         if (films.containsKey(film.getId())) {
@@ -45,7 +46,7 @@ public class FilmController {
     }
 
     @ResponseBody
-    @GetMapping("/films")
+    @GetMapping
     public List<Film> getFilms() {
         return new ArrayList<>(films.values());
     }
