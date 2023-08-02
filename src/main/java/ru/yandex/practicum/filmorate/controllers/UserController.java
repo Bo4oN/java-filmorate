@@ -1,8 +1,6 @@
 package ru.yandex.practicum.filmorate.controllers;
 
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 
 import exceptions.ValidationException;
@@ -15,41 +13,32 @@ import javax.validation.Valid;
 @Slf4j
 @RequestMapping("/users")
 @RestController
-public class UserController extends SimpleController {
-    /*private final HashMap<Integer, User> users = new HashMap<>();
-    private int nextId = 1;
+public class UserController extends SimpleController<User> {
 
+    @Override
     @ResponseBody
     @PostMapping
-    public User addUser(@Valid @RequestBody User user) {
+    public User addEntity(@Valid @RequestBody User user) {
         log.info("Получен запрос на добовление пользователя.");
         validationUser(user);
-        user.setId(nextId++);
-        users.put(user.getId(), user);
         log.info("Пользователь успешно добавлен.");
-        return user;
+        return super.addEntity(user);
     }
 
+    @Override
     @ResponseBody
     @PutMapping
-    public User updateUser(@Valid @RequestBody User user) {
+    public User updateEntity(@Valid @RequestBody User user) {
         log.info("Получен запрос на обновление пользователя.");
-        if (users.containsKey(user.getId())) {
-                validationUser(user);
-                users.put(user.getId(), user);
-                log.info("Пользователь успешно изменен.");
-        } else {
-            log.debug("Обновляется не добавленный пользователь, его ID - '{}'", user.getId());
-            throw new ValidationException("Не добавлен пользователь с ID - " + user.getId());
-
-        }
-        return user;
+        validationUser(user);
+        log.info("Пользователь успешно обновлен.");
+        return super.updateEntity(user);
     }
 
     @ResponseBody
     @GetMapping
     public List<User> getUsers() {
-        return new ArrayList<>(users.values());
+        return super.getEntity();
     }
 
     private void validationUser(User user) {
@@ -73,5 +62,5 @@ public class UserController extends SimpleController {
             user.setName(user.getLogin());
             log.info("Имя пользователя не добавлено, оно становится равно логину - '{}'", user.getLogin());
         }
-    }*/
+    }
 }

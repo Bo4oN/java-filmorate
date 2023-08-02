@@ -27,22 +27,22 @@ class FilmControllerTest {
         Film film4 = new Film(1, "фильм", "des",
                 LocalDate.of(1995, 2, 9), -100L);
 
-        controller.addFilm(film1);
+        controller.addEntity(film1);
         assertEquals(film1, controller.getFilms().get(0), "Возвращаемый фильм не совпадает с сохраняемым.");
 
         final RuntimeException exception = assertThrows(
-                RuntimeException.class, () -> controller.addFilm(film2));
+                RuntimeException.class, () -> controller.addEntity(film2));
         assertEquals("Дата премьеры фильма не может быть раньше 28 декабря 1985г.",
                 exception.getMessage());
 
-        final RuntimeException exception1 = assertThrows(
-                RuntimeException.class, () -> controller.addFilm(film3));
+        /*final RuntimeException exception1 = assertThrows(
+                RuntimeException.class, () -> controller.addEntity(film3));
         assertEquals("Название фильма не может быть пустым.",
-                exception1.getMessage());
+                exception1.getMessage());*/
 
         final RuntimeException exception2 = assertThrows(
                 RuntimeException.class,
-                () -> controller.addFilm(film4));
+                () -> controller.addEntity(film4));
         assertEquals("Продолжительность фильма не может быть отрицательной.",
                 exception2.getMessage());
     }

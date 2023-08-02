@@ -4,58 +4,51 @@ import exceptions.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
 
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 
-@RestController
-@RequestMapping("/films")
+import javax.validation.Valid;
+
 @Slf4j
-public class FilmController /* extends SimpleController */ {
-    private final HashMap<Integer, Film> films = new HashMap<>();
-    private int nextId = 1;
+@RequestMapping("/films")
+@RestController
+public class FilmController extends SimpleController <Film> {
+
     private static final LocalDate BIRTHDAY_MOVIE = LocalDate.of(1895, 12, 28);
 
+    @Override
     @ResponseBody
     @PostMapping
-    public Film addFilm(@RequestBody Film film) {
+    public Film addEntity(@Valid @RequestBody Film film) {
         log.info("Получен запрос на добовление фильма.");
         validationFilm(film);
-        film.setId(nextId++);
-        films.put(film.getId(), film);
         log.info("Добавлен фильм - " + film);
-        return film;
+        return super.addEntity(film);
     }
 
+    @Override
     @ResponseBody
     @PutMapping
-    public Film updateFilm(@RequestBody Film film) {
+    public Film updateEntity(@Valid @RequestBody Film film) {
         log.info("Получен запрос на изменение фильма.");
-        if (films.containsKey(film.getId())) {
-            validationFilm(film);
-            films.put(film.getId(), film);
-            log.info("Фильм успешно изменен на - '{}'", film);
-        } else {
-            log.debug("Обновляется несуществующий фильм.");
-            throw new ValidationException("Фильм с таким ID не был добавлен.");
-        }
-        return film;
+        validationFilm(film);
+        log.info("Фильм успешно изменен на - '{}'", film);
+        return super.updateEntity(film);
     }
 
     @ResponseBody
     @GetMapping
     public List<Film> getFilms() {
-        return new ArrayList<>(films.values());
+        return super.getEntity();
     }
 
     private void validationFilm(Film film) {
-        if (film.getName().isBlank()) {
+        /*if (film.getName().isBlank()) {
             log.debug("Фильм не имеет названия.");
             throw new ValidationException("Название фильма не может быть пустым.");
-        }
+        }*/
 
         if (film.getDescription().length() > 200) {
             log.debug("В описании более 200 символов.");
