@@ -8,7 +8,7 @@ import java.util.HashMap;
 import java.util.List;
 
 @Slf4j
-public class SimpleController <T extends Entity> {
+public class SimpleController<T extends Entity> {
         protected final HashMap<Integer, T> entities = new HashMap<>();
         private int nextId = 1;
 
