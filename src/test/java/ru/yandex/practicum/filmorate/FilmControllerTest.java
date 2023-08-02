@@ -28,7 +28,7 @@ class FilmControllerTest {
                 LocalDate.of(1995, 2, 9), -100L);
 
         controller.addEntity(film1);
-        assertEquals(film1, controller.getFilms().get(0), "Возвращаемый фильм не совпадает с сохраняемым.");
+        assertEquals(film1, controller.getEntity().get(0), "Возвращаемый фильм не совпадает с сохраняемым.");
 
         final RuntimeException exception = assertThrows(
                 RuntimeException.class, () -> controller.addEntity(film2));

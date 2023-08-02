@@ -22,7 +22,7 @@ public class FilmController extends SimpleController<Film> {
     @ResponseBody
     @PostMapping
     public Film addEntity(@Valid @RequestBody Film film) {
-        log.info("Получен запрос на добовление фильма.");
+        log.info("Получен запрос на добавление фильма.");
         validationFilm(film);
         log.info("Добавлен фильм - " + film);
         return super.addEntity(film);
@@ -38,9 +38,10 @@ public class FilmController extends SimpleController<Film> {
         return super.updateEntity(film);
     }
 
+    @Override
     @ResponseBody
     @GetMapping
-    public List<Film> getFilms() {
+    public List<Film> getEntity() {
         return super.getEntity();
     }
 

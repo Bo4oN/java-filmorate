@@ -33,7 +33,7 @@ class UserControllerTest {
                 LocalDate.of(2000, 02, 12));
 
         controller.addEntity(user);
-        assertEquals(user, controller.getUsers().get(0));
+        assertEquals(user, controller.getEntity().get(0));
 
         final RuntimeException exception = assertThrows(
                 RuntimeException.class, () -> controller.addEntity(user2));

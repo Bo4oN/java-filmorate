@@ -19,7 +19,7 @@ public class UserController extends SimpleController<User> {
     @ResponseBody
     @PostMapping
     public User addEntity(@Valid @RequestBody User user) {
-        log.info("Получен запрос на добовление пользователя.");
+        log.info("Получен запрос на добавление пользователя.");
         validationUser(user);
         log.info("Пользователь успешно добавлен.");
         return super.addEntity(user);
@@ -35,9 +35,10 @@ public class UserController extends SimpleController<User> {
         return super.updateEntity(user);
     }
 
+    @Override
     @ResponseBody
     @GetMapping
-    public List<User> getUsers() {
+    public List<User> getEntity() {
         return super.getEntity();
     }
 
