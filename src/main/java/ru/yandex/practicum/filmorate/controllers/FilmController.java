@@ -14,7 +14,7 @@ import javax.validation.Valid;
 @Slf4j
 @RequestMapping("/films")
 @RestController
-public class FilmController extends SimpleController <Film> {
+public class FilmController extends SimpleController<Film> {
 
     private static final LocalDate BIRTHDAY_MOVIE = LocalDate.of(1895, 12, 28);
 
