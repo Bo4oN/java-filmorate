@@ -13,12 +13,10 @@ import java.util.List;
 @Slf4j
 @Service
 public class UserService {
-    private final FilmStorage filmStorage;
     private final UserStorage userStorage;
 
     @Autowired
-    public UserService(FilmStorage filmStorage, UserStorage userStorage) {
-        this.filmStorage = filmStorage;
+    public UserService(UserStorage userStorage) {
         this.userStorage = userStorage;
     }
 
