@@ -14,34 +14,34 @@ import java.util.*;
 @Slf4j
 @Service
 public class FilmService {
-    private final Storage<Film> Storage;
+    private final Storage<Film> storage;
     private static final LocalDate BIRTHDAY_MOVIE = LocalDate.of(1895, 12, 28);
 
     @Autowired
     public FilmService(Storage<Film> storage) {
-        this.Storage = storage;
+        this.storage = storage;
     }
 
     public Film addFilm(Film film) {
         validationFilm(film);
-        return Storage.add(film);
+        return storage.add(film);
     }
 
     public Film updateFilm(Film film) {
         validationFilm(film);
-        return Storage.update(film);
+        return storage.update(film);
     }
 
     public Film getFilm(int id) {
-        return Storage.get(id);
+        return storage.get(id);
     }
 
     public List<Film> getAllFilms() {
-        return Storage.getAllFilms();
+        return storage.getAllFilms();
     }
 
     public void addLike(int filmId, int userId) {
-        Film film = Storage.get(filmId);
+        Film film = storage.get(filmId);
         if (film.getLikes().contains(userId)) {
             log.debug("Пользователь с ID - {}, уже ставил лайк фильму с ID - {}.", userId, filmId);
             throw new RuntimeException("Пользователь может поставить только один лайк");
@@ -50,7 +50,7 @@ public class FilmService {
     }
 
     public void deleteLike(int filmId, int userId) {
-        Film film = Storage.get(filmId);
+        Film film = storage.get(filmId);
         if (!film.getLikes().contains(userId)) {
             log.debug("Лайка от пользователя с ID - {}, нет в фильме с ID - {}.", userId, filmId);
             throw new NotFoundException("Нет лайка");
@@ -59,7 +59,7 @@ public class FilmService {
     }
 
     public List<Film> getTopFilms(int count) {
-        List<Film> list = Storage.getAllFilms();
+        List<Film> list = storage.getAllFilms();
         Collections.sort(list, Comparator.comparingInt(o -> o.getLikes().size()));
         List<Film> topList = new ArrayList<>();
         if (count <= list.size()) {
