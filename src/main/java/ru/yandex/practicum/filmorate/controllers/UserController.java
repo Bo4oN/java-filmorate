@@ -17,6 +17,7 @@ import javax.validation.Valid;
 public class UserController {
 
     private final UserService userService;
+
     @ResponseBody
     @PostMapping
     public User addUser(@Valid @RequestBody User user) {
