@@ -20,7 +20,7 @@ public class Film extends Entity {
     private LocalDate releaseDate;
     @Positive
     private Long duration;
-    private List<User> likes;
+    private List<Integer> likes;
 
     public Film(int id, String name, String description, LocalDate releaseDate, Long duration) {
         this.setId(id);
@@ -31,11 +31,11 @@ public class Film extends Entity {
         this.likes = new ArrayList<>();
     }
 
-    public void addLike(User user) {
-        likes.add(user);
+    public void addLike(int id) {
+        likes.add(id);
     }
 
-    public void deleteLike(User user) {
-        likes.remove(user);
+    public void deleteLike(int id) {
+        likes.remove((Integer) id);
     }
 }

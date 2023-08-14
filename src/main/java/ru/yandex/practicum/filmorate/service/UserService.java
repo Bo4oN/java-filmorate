@@ -3,8 +3,9 @@ package ru.yandex.practicum.filmorate.service;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import ru.yandex.practicum.filmorate.model.Entity;
 import ru.yandex.practicum.filmorate.model.User;
-import ru.yandex.practicum.filmorate.storage.UserStorage;
+import ru.yandex.practicum.filmorate.storage.Storage;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -12,34 +13,34 @@ import java.util.List;
 @Slf4j
 @Service
 public class UserService {
-    private final UserStorage userStorage;
+    private final Storage<User> userStorage;
 
     @Autowired
-    public UserService(UserStorage userStorage) {
+    public UserService(Storage<User> userStorage) {
         this.userStorage = userStorage;
     }
 
-    public User addUser(User user) {
+    public Entity addUser(User user) {
         validationUser(user);
-        return userStorage.addUser(user);
+        return userStorage.add(user);
     }
 
-    public User updateUser(User user) {
+    public Entity updateUser(User user) {
         validationUser(user);
-        return userStorage.updateUser(user);
+        return userStorage.update(user);
     }
 
-    public User getUser(int id) {
-        return userStorage.getUser(id);
+    public Entity getUser(int id) {
+        return userStorage.get(id);
     }
 
     public List<User> getUsers() {
-        return userStorage.getUsers();
+        return userStorage.getAllUsers();
     }
 
     public User addFriend(int userId, int friendId) {
-        User user = userStorage.getUser(userId);
-        User friend = userStorage.getUser(friendId);
+        User user = userStorage.get(userId);
+        User friend = userStorage.get(friendId);
         if (user.getFriends().contains(friendId) || friend.getFriends().contains(userId)) {
             log.debug("Пользователь с ID - {}, уже находится в друзьях у пользователя с ID - {}", friendId, userId);
             throw new RuntimeException("Попытка повторного добавления в друзья");
@@ -50,8 +51,8 @@ public class UserService {
     }
 
     public User deleteFriend(int userId, int friendId) {
-        User user = userStorage.getUser(userId);
-        User friend = userStorage.getUser(friendId);
+        User user = userStorage.get(userId);
+        User friend = userStorage.get(friendId);
         if (!user.getFriends().contains(friendId) || !friend.getFriends().contains(userId)) {
             log.debug("Пользователя с ID - {}, нет в друзьях у пользователя с ID - {}", friendId, userId);
         }
@@ -61,21 +62,21 @@ public class UserService {
     }
 
     public List<User> getFriendsList(int id) {
-        User user = userStorage.getUser(id);
+        User user = userStorage.get(id);
         List<User> friendsList = new ArrayList<>();
         for (int i : user.getFriends()) {
-            friendsList.add(userStorage.getUser(i));
+            friendsList.add(userStorage.get(i));
         }
         return friendsList;
     }
 
     public List<User> getCommonFriends(int userId, int friendId) {
         List<User> commonFriends = new ArrayList<>();
-        User user = userStorage.getUser(userId);
-        User friend = userStorage.getUser(friendId);
+        User user = userStorage.get(userId);
+        User friend = userStorage.get(friendId);
         for (Integer i : user.getFriends()) {
             if (friend.getFriends().contains(i)) {
-                commonFriends.add(userStorage.getUser(i));
+                commonFriends.add(userStorage.get(i));
             }
         }
         return commonFriends;

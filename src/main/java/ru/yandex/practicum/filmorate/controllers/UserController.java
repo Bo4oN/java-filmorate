@@ -4,6 +4,7 @@ import java.util.List;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import ru.yandex.practicum.filmorate.model.Entity;
 import ru.yandex.practicum.filmorate.model.User;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.service.UserService;
@@ -20,21 +21,21 @@ public class UserController {
 
     @ResponseBody
     @PostMapping
-    public User addUser(@Valid @RequestBody User user) {
+    public Entity addUser(@Valid @RequestBody User user) {
         log.info("Получен запрос на добавление пользователя.");
         return userService.addUser(user);
     }
 
     @ResponseBody
     @PutMapping
-    public User updateUsers(@Valid @RequestBody User user) {
+    public Entity updateUsers(@Valid @RequestBody User user) {
         log.info("Получен запрос на обновление пользователя.");
         return userService.updateUser(user);
     }
 
     @ResponseBody
     @GetMapping("/{id}")
-    public User getUserById(@PathVariable String id) {
+    public Entity getUserById(@PathVariable String id) {
         log.info("Получен запрос на получение пользователя с ID - {}.", id);
         return userService.getUser(Integer.parseInt(id));
     }
@@ -47,13 +48,13 @@ public class UserController {
 
     @ResponseBody
     @PutMapping("/{id}/friends/{friendId}")
-    public User addFriend(@PathVariable String id, @PathVariable String friendId) {
+    public Entity addFriend(@PathVariable String id, @PathVariable String friendId) {
         return userService.addFriend(Integer.parseInt(id), Integer.parseInt(friendId));
     }
 
     @ResponseBody
     @DeleteMapping("/{id}/friends/{friendId}")
-    public User deleteFriend(@PathVariable String id, @PathVariable String friendId) {
+    public Entity deleteFriend(@PathVariable String id, @PathVariable String friendId) {
         return userService.deleteFriend(Integer.parseInt(id), Integer.parseInt(friendId));
     }
 

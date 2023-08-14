@@ -1,6 +1,7 @@
 package ru.yandex.practicum.filmorate.controllers;
 
 import lombok.RequiredArgsConstructor;
+import ru.yandex.practicum.filmorate.model.Entity;
 import ru.yandex.practicum.filmorate.model.Film;
 
 import java.util.List;
@@ -8,7 +9,7 @@ import java.util.List;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.service.FilmService;
-import ru.yandex.practicum.filmorate.storage.FilmStorage;
+import ru.yandex.practicum.filmorate.storage.Storage;
 
 import javax.validation.Valid;
 
@@ -19,7 +20,7 @@ import javax.validation.Valid;
 public class FilmController {
 
     private final FilmService filmService;
-    private final FilmStorage filmStorage;
+    private final Storage<Film> filmStorage;
 
     @ResponseBody
     @PostMapping
@@ -39,7 +40,7 @@ public class FilmController {
     @GetMapping("/{id}")
     public Film getFilmById(@PathVariable String id) {
         log.info("Получен запрос на получения фильма с id - {}", id);
-        return filmStorage.getFilm(Integer.parseInt(id));
+        return filmStorage.get(Integer.parseInt(id));
     }
 
     @ResponseBody
@@ -50,7 +51,7 @@ public class FilmController {
 
     @ResponseBody
     @PutMapping("/{id}/like/{userId}")
-    public Film addLike(@PathVariable String id, @PathVariable String userId) {
+    public Entity addLike(@PathVariable String id, @PathVariable String userId) {
         log.info("Запрос на добавление лайка от пользователя с ID - {}.", userId);
         filmService.addLike(Integer.parseInt(id), Integer.parseInt(userId));
         return filmService.getFilm(Integer.parseInt(id));
@@ -58,7 +59,7 @@ public class FilmController {
 
     @ResponseBody
     @DeleteMapping("/{id}/like/{userId}")
-    public Film deleteLike(@PathVariable String id, @PathVariable String userId) {
+    public Entity deleteLike(@PathVariable String id, @PathVariable String userId) {
         log.info("Запрос на удаление лайка от пользователя с ID - {}.", userId);
         filmService.deleteLike(Integer.parseInt(id), Integer.parseInt(userId));
         return filmService.getFilm(Integer.parseInt(id));
