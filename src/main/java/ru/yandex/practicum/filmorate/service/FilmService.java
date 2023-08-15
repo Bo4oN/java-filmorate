@@ -5,7 +5,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exceptions.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
-import ru.yandex.practicum.filmorate.storage.Storage;
+import ru.yandex.practicum.filmorate.storage.FilmStorage;
 import ru.yandex.practicum.filmorate.exceptions.ValidationException;
 
 import java.time.LocalDate;
@@ -14,11 +14,11 @@ import java.util.*;
 @Slf4j
 @Service
 public class FilmService {
-    private final Storage<Film> storage;
+    private final FilmStorage storage;
     private static final LocalDate BIRTHDAY_MOVIE = LocalDate.of(1895, 12, 28);
 
     @Autowired
-    public FilmService(Storage<Film> storage) {
+    public FilmService(FilmStorage storage) {
         this.storage = storage;
     }
 
@@ -37,7 +37,7 @@ public class FilmService {
     }
 
     public List<Film> getAllFilms() {
-        return storage.getAllFilms();
+        return storage.getAll();
     }
 
     public void addLike(int filmId, int userId) {
@@ -59,8 +59,8 @@ public class FilmService {
     }
 
     public List<Film> getTopFilms(int count) {
-        List<Film> list = storage.getAllFilms();
-        Collections.sort(list, Comparator.comparingInt(o -> o.getLikes().size()));
+        List<Film> list = storage.getAll();
+        list.sort(Comparator.comparingInt(o -> o.getLikes().size()));
         List<Film> topList = new ArrayList<>();
         if (count <= list.size()) {
             for (int i = 0; i < count; i++) {

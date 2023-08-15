@@ -5,7 +5,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.model.Entity;
 import ru.yandex.practicum.filmorate.model.User;
-import ru.yandex.practicum.filmorate.storage.Storage;
+import ru.yandex.practicum.filmorate.storage.UserStorage;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -13,10 +13,10 @@ import java.util.List;
 @Slf4j
 @Service
 public class UserService {
-    private final Storage<User> userStorage;
+    private final UserStorage userStorage;
 
     @Autowired
-    public UserService(Storage<User> userStorage) {
+    public UserService(UserStorage userStorage) {
         this.userStorage = userStorage;
     }
 
@@ -35,7 +35,7 @@ public class UserService {
     }
 
     public List<User> getUsers() {
-        return userStorage.getAllUsers();
+        return userStorage.getAll();
     }
 
     public User addFriend(int userId, int friendId) {

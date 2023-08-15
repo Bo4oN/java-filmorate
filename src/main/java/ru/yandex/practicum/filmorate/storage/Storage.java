@@ -13,7 +13,5 @@ public interface Storage<T extends Entity> {
 
     T get(int id);
 
-    List<T> getAllFilms();
-
-    List<T> getAllUsers();
+    List<T> getAll();
 }
