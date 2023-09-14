@@ -1,69 +1,74 @@
 package ru.yandex.practicum.filmorate.controllers;
 
-import exceptions.ValidationException;
+import lombok.RequiredArgsConstructor;
+import ru.yandex.practicum.filmorate.model.Entity;
 import ru.yandex.practicum.filmorate.model.Film;
 
-import java.time.LocalDate;
 import java.util.List;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
+import ru.yandex.practicum.filmorate.service.FilmService;
+import ru.yandex.practicum.filmorate.storage.Storage;
 
 import javax.validation.Valid;
 
 @Slf4j
+@RequiredArgsConstructor
 @RequestMapping("/films")
 @RestController
-public class FilmController extends SimpleController<Film> {
+public class FilmController {
 
-    private static final LocalDate BIRTHDAY_MOVIE = LocalDate.of(1895, 12, 28);
+    private final FilmService filmService;
+    private final Storage<Film> filmStorage;
 
-    @Override
     @ResponseBody
     @PostMapping
-    public Film addEntity(@Valid @RequestBody Film film) {
+    public Film addFilm(@Valid @RequestBody Film film) {
         log.info("Получен запрос на добавление фильма.");
-        validationFilm(film);
-        log.info("Добавлен фильм - " + film);
-        return super.addEntity(film);
+        return filmService.addFilm(film);
     }
 
-    @Override
     @ResponseBody
     @PutMapping
-    public Film updateEntity(@Valid @RequestBody Film film) {
+    public Film updateFilm(@Valid @RequestBody Film film) {
         log.info("Получен запрос на изменение фильма.");
-        validationFilm(film);
-        log.info("Фильм успешно изменен на - '{}'", film);
-        return super.updateEntity(film);
+        return filmService.updateFilm(film);
     }
 
-    @Override
+    @ResponseBody
+    @GetMapping("/{id}")
+    public Film getFilmById(@PathVariable String id) {
+        log.info("Получен запрос на получения фильма с id - {}", id);
+        return filmStorage.get(Integer.parseInt(id));
+    }
+
     @ResponseBody
     @GetMapping
-    public List<Film> getEntity() {
-        return super.getEntity();
+    public List<Film> getAllFilms() {
+        return filmService.getAllFilms();
     }
 
-    private void validationFilm(Film film) {
-        /*if (film.getName().isBlank()) {
-            log.debug("Фильм не имеет названия.");
-            throw new ValidationException("Название фильма не может быть пустым.");
-        }*/
+    @ResponseBody
+    @PutMapping("/{id}/like/{userId}")
+    public Entity addLike(@PathVariable String id, @PathVariable String userId) {
+        log.info("Запрос на добавление лайка от пользователя с ID - {}.", userId);
+        filmService.addLike(Integer.parseInt(id), Integer.parseInt(userId));
+        return filmService.getFilm(Integer.parseInt(id));
+    }
 
-        if (film.getDescription().length() > 200) {
-            log.debug("В описании более 200 символов.");
-            throw new ValidationException("В описании фильма должно быть не более 200 символов.");
-        }
+    @ResponseBody
+    @DeleteMapping("/{id}/like/{userId}")
+    public Entity deleteLike(@PathVariable String id, @PathVariable String userId) {
+        log.info("Запрос на удаление лайка от пользователя с ID - {}.", userId);
+        filmService.deleteLike(Integer.parseInt(id), Integer.parseInt(userId));
+        return filmService.getFilm(Integer.parseInt(id));
+    }
 
-        if (film.getReleaseDate().isBefore(BIRTHDAY_MOVIE)) {
-            log.debug("Не валидная дата премьеры.");
-            throw new ValidationException("Дата премьеры фильма не может быть раньше 28 декабря 1985г.");
-        }
-
-        if (film.getDuration() <= 0) {
-            log.debug("Отрицательное значение в продолжительности фильма.");
-            throw new ValidationException("Продолжительность фильма не может быть отрицательной.");
-        }
+    @ResponseBody
+    @GetMapping("/popular")
+    public List<Film> getTopFilm(@RequestParam(defaultValue = "10") String count) {
+        log.info("Запрос на получение {} самых популярных фильмов.", count);
+        return filmService.getTopFilms(Integer.parseInt(count));
     }
 }

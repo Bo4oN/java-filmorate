@@ -1,67 +1,72 @@
 package ru.yandex.practicum.filmorate.controllers;
 
-import java.time.LocalDate;
 import java.util.List;
 
-import exceptions.ValidationException;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import ru.yandex.practicum.filmorate.model.Entity;
 import ru.yandex.practicum.filmorate.model.User;
 import org.springframework.web.bind.annotation.*;
+import ru.yandex.practicum.filmorate.service.UserService;
 
 import javax.validation.Valid;
 
 @Slf4j
+@RequiredArgsConstructor
 @RequestMapping("/users")
 @RestController
-public class UserController extends SimpleController<User> {
+public class UserController {
 
-    @Override
+    private final UserService userService;
+
     @ResponseBody
     @PostMapping
-    public User addEntity(@Valid @RequestBody User user) {
+    public Entity addUser(@Valid @RequestBody User user) {
         log.info("Получен запрос на добавление пользователя.");
-        validationUser(user);
-        log.info("Пользователь успешно добавлен.");
-        return super.addEntity(user);
+        return userService.addUser(user);
     }
 
-    @Override
     @ResponseBody
     @PutMapping
-    public User updateEntity(@Valid @RequestBody User user) {
+    public Entity updateUsers(@Valid @RequestBody User user) {
         log.info("Получен запрос на обновление пользователя.");
-        validationUser(user);
-        log.info("Пользователь успешно обновлен.");
-        return super.updateEntity(user);
+        return userService.updateUser(user);
     }
 
-    @Override
+    @ResponseBody
+    @GetMapping("/{id}")
+    public Entity getUserById(@PathVariable String id) {
+        log.info("Получен запрос на получение пользователя с ID - {}.", id);
+        return userService.getUser(Integer.parseInt(id));
+    }
+
     @ResponseBody
     @GetMapping
-    public List<User> getEntity() {
-        return super.getEntity();
+    public List<User> getUsers() {
+        return userService.getUsers();
     }
 
-    private void validationUser(User user) {
-        if (!user.getEmail().contains("@") || user.getEmail().isBlank() || user.getEmail() == null) {
-            log.debug("У пользователя некорректный Email.");
-            throw new ValidationException("Электронная почта не может быть пустой и должна содержать символ @.");
-        }
+    @ResponseBody
+    @PutMapping("/{id}/friends/{friendId}")
+    public Entity addFriend(@PathVariable String id, @PathVariable String friendId) {
+        return userService.addFriend(Integer.parseInt(id), Integer.parseInt(friendId));
+    }
 
-        if (user.getLogin().isBlank() || user.getLogin().contains(" ")) {
-            log.debug("Недопустимые символы в логине пользователя.");
-            throw new ValidationException("Логин не может быть пустым и содержать пробелы.");
-        }
+    @ResponseBody
+    @DeleteMapping("/{id}/friends/{friendId}")
+    public Entity deleteFriend(@PathVariable String id, @PathVariable String friendId) {
+        return userService.deleteFriend(Integer.parseInt(id), Integer.parseInt(friendId));
+    }
 
-        if (user.getBirthday().isAfter(LocalDate.now())) {
-            log.debug("Невалидная дата рождения пользователя");
-            throw new ValidationException("Дата рождения не может быть в будущем.");
-        }
+    @ResponseBody
+    @GetMapping("/{id}/friends")
+    public List<User> getFriendsList(@PathVariable String id) {
+        return userService.getFriendsList(Integer.parseInt(id));
+    }
 
-        if (user.getName() == null || user.getName().isBlank()) {
-            log.debug("Мы тут {} {}", user.getName(), user.getLogin());
-            user.setName(user.getLogin());
-            log.info("Имя пользователя не добавлено, оно становится равно логину - '{}'", user.getLogin());
-        }
+    @ResponseBody
+    @GetMapping("/{id}/friends/common/{otherId}")
+    public List<User> getCommonFriends(@PathVariable String id, @PathVariable String otherId) {
+        return userService.getCommonFriends(Integer.parseInt(id), Integer.parseInt(otherId));
     }
 }
