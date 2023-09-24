@@ -87,9 +87,8 @@ public class UserDbStorage implements UserStorage {
                     rs.getString("name"),
                     rs.getDate("birthday").toLocalDate()
             );
-
         }
-    };
+    }
 
     @Override
     public User addFriend(int firstId, int secondId) {
