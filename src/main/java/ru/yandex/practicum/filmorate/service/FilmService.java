@@ -3,10 +3,10 @@ package ru.yandex.practicum.filmorate.service;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import ru.yandex.practicum.filmorate.exceptions.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
-import ru.yandex.practicum.filmorate.storage.FilmStorage;
 import ru.yandex.practicum.filmorate.exceptions.ValidationException;
+import ru.yandex.practicum.filmorate.model.Genre;
+import ru.yandex.practicum.filmorate.storage.FilmDaoStorage.FilmStorage;
 
 import java.time.LocalDate;
 import java.util.*;
@@ -41,37 +41,15 @@ public class FilmService {
     }
 
     public void addLike(int filmId, int userId) {
-        Film film = storage.get(filmId);
-        if (film.getLikes().contains(userId)) {
-            log.debug("Пользователь с ID - {}, уже ставил лайк фильму с ID - {}.", userId, filmId);
-            throw new RuntimeException("Пользователь может поставить только один лайк");
-        }
-        film.addLike(userId);
+        storage.addLike(filmId, userId);
     }
 
     public void deleteLike(int filmId, int userId) {
-        Film film = storage.get(filmId);
-        if (!film.getLikes().contains(userId)) {
-            log.debug("Лайка от пользователя с ID - {}, нет в фильме с ID - {}.", userId, filmId);
-            throw new NotFoundException("Нет лайка");
-        }
-        film.deleteLike(userId);
+        storage.deleteLike(filmId, userId);
     }
 
     public List<Film> getTopFilms(int count) {
-        List<Film> list = storage.getAll();
-        list.sort(Comparator.comparingInt(o -> o.getLikes().size()));
-        List<Film> topList = new ArrayList<>();
-        if (count <= list.size()) {
-            for (int i = 0; i < count; i++) {
-                topList.add(list.get((list.size() - 1) - i));
-            }
-        } else {
-            for (int i = 0; i < list.size(); i++) {
-                    topList.add(list.get((list.size() - 1) - i));
-            }
-        }
-        return topList;
+        return storage.getTopFilms(count);
     }
 
     private void validationFilm(Film film) {
