@@ -29,8 +29,8 @@ public class GenreDbStorage implements GenreStorage {
         String sqlQuery = "SELECT * FROM GENRE_TYPES WHERE GENRE_TYPES_ID = :genre_types_id";
         MapSqlParameterSource params = new MapSqlParameterSource("genre_types_id", id);
         try {
-            return namedParameterJdbcTemplate.queryForObject
-                    (sqlQuery,
+            return namedParameterJdbcTemplate.queryForObject(
+                    sqlQuery,
                             params,
                             (rs, rowNum) -> new Genre(rs.getInt("genre_types_id"), rs.getString("name"))
                     );
