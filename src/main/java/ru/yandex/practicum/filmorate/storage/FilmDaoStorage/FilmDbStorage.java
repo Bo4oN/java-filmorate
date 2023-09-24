@@ -18,7 +18,6 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.Set;
 
 @Repository
 @Slf4j
@@ -53,7 +52,7 @@ public class FilmDbStorage implements FilmStorage {
     public Film update(Film film) {
         String sqlQuery =
                 "UPDATE FILMS SET MPA_ID = ?, NAME = ?, DESCRIPTION = ?, DURATION = ?, RELEASE_DATE = ?" +
-                "WHERE FILM_ID = ?";
+                        "WHERE FILM_ID = ?";
         int rowsCount = jdbcTemplate.update(sqlQuery,
                 film.getMpa().getId(),
                 film.getName(),
@@ -103,7 +102,9 @@ public class FilmDbStorage implements FilmStorage {
             film.setGenres(set);
             return film;
         }
-    };
+    }
+
+    ;
 
     @Override
     public void addLike(int filmId, int userId) {
