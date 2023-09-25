@@ -97,7 +97,7 @@ public class UserDbStorage implements UserStorage {
         } catch (EmptyResultDataAccessException e) {
             throw new NotFoundException("Пользователя с ID - " + secondId + " нет в базе.");
         }
-        String sqlQuery = "INSERT INTO friend (USER1_ID, USER2_ID) VALUES ( ?, ? );";
+        String sqlQuery = "INSERT INTO friends (USER1_ID, USER2_ID) VALUES ( ?, ? );";
         jdbcTemplate.update(sqlQuery, firstId, secondId);
         log.info("Пользователи с ID - " + firstId + " и ID - " + secondId + " теперь друзья.");
         return get(secondId);
@@ -105,7 +105,7 @@ public class UserDbStorage implements UserStorage {
 
     @Override
     public User deleteFriend(int firstId, int secondId) {
-        String sqlQuery = "DELETE FROM friend WHERE user1_id = ? AND user2_id = ?;";
+        String sqlQuery = "DELETE FROM friends WHERE user1_id = ? AND user2_id = ?;";
         jdbcTemplate.update(sqlQuery, firstId, secondId);
         log.info("Пользователи с ID - " + firstId + " и ID - " + secondId + " больше не друзья.");
         return get(secondId);
@@ -116,17 +116,17 @@ public class UserDbStorage implements UserStorage {
     public List<User> getFriendsList(int id) {
         String sqlQuery = "SELECT user_id, name, login, email, birthday" +
                 " FROM users WHERE USER_ID" +
-                " IN (SELECT USER2_ID FROM FRIEND WHERE USER1_ID = ?);";
+                " IN (SELECT USER2_ID FROM friends WHERE USER1_ID = ?);";
         return jdbcTemplate.query(sqlQuery, new UserMapper(), id);
     }
 
     @Override
     public List<User> getCommonFriends(int firstId, int secondId) {
         String sqlQuery = "SELECT user_id, name, login, email, birthday" +
-                " FROM FRIEND" +
-                " INNER JOIN PUBLIC.USERS U ON U.USER_ID = FRIEND.USER2_ID " +
-                " WHERE FRIEND.USER1_ID = ? AND FRIEND.USER2_ID IN " +
-                " (SELECT USER2_ID FROM FRIEND WHERE USER1_ID = ?); ";
+                " FROM friends" +
+                " INNER JOIN PUBLIC.USERS U ON U.USER_ID = friends.USER2_ID " +
+                " WHERE friends.USER1_ID = ? AND friends.USER2_ID IN " +
+                " (SELECT USER2_ID FROM friends WHERE USER1_ID = ?); ";
         return jdbcTemplate.query(sqlQuery, new UserMapper(), firstId, secondId);
     }
 }

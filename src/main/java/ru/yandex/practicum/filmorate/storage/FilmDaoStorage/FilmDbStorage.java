@@ -11,6 +11,7 @@ import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.exceptions.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
+import ru.yandex.practicum.filmorate.model.Mpa;
 import ru.yandex.practicum.filmorate.storage.GenreDaoStorage.GenreStorage;
 import ru.yandex.practicum.filmorate.storage.MpaDaoStorage.MpaStorage;
 
@@ -73,7 +74,10 @@ public class FilmDbStorage implements FilmStorage {
 
     @Override
     public Film get(int id) {
-        String sqlQuery = "SELECT * FROM FILMS WHERE FILM_ID = ?";
+        String sqlQuery = "SELECT FILM_ID, FILMS.NAME AS FN, DESCRIPTION, DURATION, RELEASE_DATE, " +
+                "MPA.MPA_ID, MPA.NAME AS MN  " +
+                "FROM FILMS LEFT JOIN MPA ON FILMS.MPA_ID = MPA.MPA_ID WHERE FILM_ID = ? " +
+                "GROUP BY FILMS.FILM_ID, FN, DESCRIPTION, DURATION, RELEASE_DATE, MPA.MPA_ID, MN";
         try {
             return jdbcTemplate.queryForObject(sqlQuery, new FilmMapper(), id);
         } catch (EmptyResultDataAccessException e) {
@@ -83,7 +87,10 @@ public class FilmDbStorage implements FilmStorage {
 
     @Override
     public List<Film> getAll() {
-        String sqlQuery = "SELECT * FROM FILMS";
+        String sqlQuery = "SELECT FILM_ID, FILMS.NAME AS FN, DESCRIPTION, DURATION, RELEASE_DATE, " +
+                "MPA.MPA_ID, MPA.NAME AS MN  " +
+                "FROM FILMS LEFT JOIN MPA ON FILMS.MPA_ID = MPA.MPA_ID " +
+                "GROUP BY FILMS.FILM_ID, FN, DESCRIPTION, DURATION, RELEASE_DATE, MPA.MPA_ID, MN";
         return jdbcTemplate.query(sqlQuery, new FilmMapper());
     }
 
@@ -92,11 +99,11 @@ public class FilmDbStorage implements FilmStorage {
         @Override
         public Film mapRow(ResultSet rs, int rowNum) throws SQLException {
             Film film = new Film(rs.getInt("film_id"),
-                    rs.getString("name"),
+                    rs.getString("fn"),
                     rs.getString("description"),
                     rs.getDate("release_date").toLocalDate(),
                     rs.getLong("duration"),
-                    mpaStorage.getMpa(rs.getInt("mpa_id"))
+                    new Mpa(rs.getInt("mpa_id"), rs.getString("mn"))
             );
             LinkedHashSet<Genre> set = new LinkedHashSet<>(genreStorage.getGenresOfFilm(rs.getInt("film_id")));
             film.setGenres(set);
@@ -123,10 +130,12 @@ public class FilmDbStorage implements FilmStorage {
 
     @Override
     public List<Film> getTopFilms(int count) {
-        String sqlQuery = "SELECT FILMS.FILM_ID, MPA_ID, NAME, DESCRIPTION, DURATION, RELEASE_DATE, " +
+        String sqlQuery = "SELECT FILMS.FILM_ID, FILMS.NAME AS FN, DESCRIPTION, DURATION, RELEASE_DATE, " +
+                "MPA.MPA_ID, MPA.NAME AS MN, " +
                 "COUNT(LIKE_ID) AS film_likes " +
                 "FROM FILMS LEFT JOIN LIKES ON FILMS.FILM_ID = LIKES.FILM_ID " +
-                "GROUP BY FILMS.FILM_ID,  MPA_ID, NAME, DESCRIPTION, DURATION, RELEASE_DATE " +
+                "LEFT JOIN MPA ON FILMS.MPA_ID = MPA.MPA_ID " +
+                "GROUP BY FILMS.FILM_ID, FN, DESCRIPTION, DURATION, RELEASE_DATE, MPA.MPA_ID, MN " +
                 "ORDER BY film_likes DESC " +
                 "LIMIT ?";
         return jdbcTemplate.query(sqlQuery, new FilmMapper(), count);

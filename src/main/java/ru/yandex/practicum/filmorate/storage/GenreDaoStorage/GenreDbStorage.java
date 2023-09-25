@@ -12,6 +12,8 @@ import ru.yandex.practicum.filmorate.exceptions.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
 
+import java.sql.PreparedStatement;
+import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
@@ -30,10 +32,10 @@ public class GenreDbStorage implements GenreStorage {
         MapSqlParameterSource params = new MapSqlParameterSource("genre_types_id", id);
         try {
             return namedParameterJdbcTemplate.queryForObject(
-                    sqlQuery,
-                            params,
-                            (rs, rowNum) -> new Genre(rs.getInt("genre_types_id"), rs.getString("name"))
-                    );
+                sqlQuery,
+                    params,
+                    (rs, rowNum) -> new Genre(rs.getInt("genre_types_id"), rs.getString("name"))
+                );
         } catch (EmptyResultDataAccessException e) {
             throw new NotFoundException("Жанра с ID - " + id + " нет в базе.");
         }
@@ -49,13 +51,12 @@ public class GenreDbStorage implements GenreStorage {
 
     @Override
     public void addFilmToGenre(Film film) {
-        Set<Genre> genres = film.getGenres();
-        System.out.println(genres);
-        String sqlQuery = "INSERT INTO GENRES (GENRE_TYPES_ID, FILM_ID) VALUES ( ?, ? )";
-        for (Genre genre : genres) {
-            System.out.println(genre.getId());
-            jdbcTemplate.update(sqlQuery, genre.getId(), film.getId());
-        }
+        String sqlQuery = "INSERT INTO GENRES (GENRE_TYPES_ID, FILM_ID) VALUES ( ?, " + film.getId()  + ")";
+            jdbcTemplate.batchUpdate(sqlQuery, film.getGenres(), 10,
+                    (PreparedStatement ps, Genre genre) -> {
+                        ps.setInt(1, genre.getId());
+                    }
+            );
     }
 
     @Override
