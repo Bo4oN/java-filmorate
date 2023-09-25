@@ -13,7 +13,6 @@ import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
 
 import java.sql.PreparedStatement;
-import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
@@ -52,6 +51,7 @@ public class GenreDbStorage implements GenreStorage {
     @Override
     public void addFilmToGenre(Film film) {
         String sqlQuery = "INSERT INTO GENRES (GENRE_TYPES_ID, FILM_ID) VALUES ( ?, " + film.getId()  + ")";
+        //Не разобрался можно ли film.id передать в метод batchUpdate
             jdbcTemplate.batchUpdate(sqlQuery, film.getGenres(), 10,
                     (PreparedStatement ps, Genre genre) -> {
                         ps.setInt(1, genre.getId());
