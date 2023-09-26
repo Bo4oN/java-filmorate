@@ -3,6 +3,7 @@ package ru.yandex.practicum.filmorate.storage.GenreDaoStorage;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.EmptyResultDataAccessException;
+import org.springframework.jdbc.core.BatchPreparedStatementSetter;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
@@ -13,6 +14,8 @@ import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
 
 import java.sql.PreparedStatement;
+import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
@@ -50,13 +53,20 @@ public class GenreDbStorage implements GenreStorage {
 
     @Override
     public void addFilmToGenre(Film film) {
-        String sqlQuery = "INSERT INTO GENRES (GENRE_TYPES_ID, FILM_ID) VALUES ( ?, " + film.getId()  + ")";
-        //Не разобрался можно ли film.id передать в метод batchUpdate
-            jdbcTemplate.batchUpdate(sqlQuery, film.getGenres(), 10,
-                    (PreparedStatement ps, Genre genre) -> {
-                        ps.setInt(1, genre.getId());
-                    }
-            );
+        String sqlQuery = "INSERT INTO GENRES (GENRE_TYPES_ID, FILM_ID) VALUES ( ?, ?)";
+        List<Genre> genreList = new ArrayList<>(film.getGenres());
+        jdbcTemplate.batchUpdate(sqlQuery, new BatchPreparedStatementSetter() {
+            @Override
+            public void setValues(PreparedStatement ps, int i) throws SQLException {
+                ps.setInt(1, genreList.get(i).getId());
+                ps.setInt(2, film.getId());
+            }
+
+            @Override
+            public int getBatchSize() {
+                return genreList.size();
+            }
+        });
     }
 
     @Override
