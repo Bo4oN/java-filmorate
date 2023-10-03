@@ -1,12 +1,12 @@
 package ru.yandex.practicum.filmorate.model;
 
 import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.RequiredArgsConstructor;
 
 import javax.validation.constraints.PositiveOrZero;
 
 @Data
-@NoArgsConstructor
+@RequiredArgsConstructor
 public class Entity {
     @PositiveOrZero
     private int id;

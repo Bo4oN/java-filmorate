@@ -3,9 +3,8 @@ package ru.yandex.practicum.filmorate.service;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import ru.yandex.practicum.filmorate.model.Entity;
 import ru.yandex.practicum.filmorate.model.User;
-import ru.yandex.practicum.filmorate.storage.UserStorage;
+import ru.yandex.practicum.filmorate.storage.UserDaoStorage.UserStorage;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -20,17 +19,17 @@ public class UserService {
         this.userStorage = userStorage;
     }
 
-    public Entity addUser(User user) {
+    public User addUser(User user) {
         validationUser(user);
         return userStorage.add(user);
     }
 
-    public Entity updateUser(User user) {
+    public User updateUser(User user) {
         validationUser(user);
         return userStorage.update(user);
     }
 
-    public Entity getUser(int id) {
+    public User getUser(int id) {
         return userStorage.get(id);
     }
 
@@ -38,48 +37,20 @@ public class UserService {
         return userStorage.getAll();
     }
 
-    public User addFriend(int userId, int friendId) {
-        User user = userStorage.get(userId);
-        User friend = userStorage.get(friendId);
-        if (user.getFriends().contains(friendId) || friend.getFriends().contains(userId)) {
-            log.debug("Пользователь с ID - {}, уже находится в друзьях у пользователя с ID - {}", friendId, userId);
-            throw new RuntimeException("Попытка повторного добавления в друзья");
-        }
-        user.addFriends(friendId);
-        friend.addFriends(userId);
-        return user;
+    public User addFriend(int firstId, int secondId) {
+        return userStorage.addFriend(firstId, secondId);
     }
 
-    public User deleteFriend(int userId, int friendId) {
-        User user = userStorage.get(userId);
-        User friend = userStorage.get(friendId);
-        if (!user.getFriends().contains(friendId) || !friend.getFriends().contains(userId)) {
-            log.debug("Пользователя с ID - {}, нет в друзьях у пользователя с ID - {}", friendId, userId);
-        }
-        user.deleteFriends(friendId);
-        friend.deleteFriends(userId);
-        return user;
+    public User deleteFriend(int firstId, int secondId) {
+        return userStorage.deleteFriend(firstId, secondId);
     }
 
     public List<User> getFriendsList(int id) {
-        User user = userStorage.get(id);
-        List<User> friendsList = new ArrayList<>();
-        for (int i : user.getFriends()) {
-            friendsList.add(userStorage.get(i));
-        }
-        return friendsList;
+        return new ArrayList<>(userStorage.getFriendsList(id));
     }
 
-    public List<User> getCommonFriends(int userId, int friendId) {
-        List<User> commonFriends = new ArrayList<>();
-        User user = userStorage.get(userId);
-        User friend = userStorage.get(friendId);
-        for (Integer i : user.getFriends()) {
-            if (friend.getFriends().contains(i)) {
-                commonFriends.add(userStorage.get(i));
-            }
-        }
-        return commonFriends;
+    public List<User> getCommonFriends(int firstId, int secondId) {
+        return new ArrayList<>(userStorage.getCommonFriends(firstId, secondId));
     }
 
     private void validationUser(User user) {

@@ -9,7 +9,7 @@ import java.util.List;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.service.FilmService;
-import ru.yandex.practicum.filmorate.storage.Storage;
+import ru.yandex.practicum.filmorate.service.UserService;
 
 import javax.validation.Valid;
 
@@ -20,7 +20,7 @@ import javax.validation.Valid;
 public class FilmController {
 
     private final FilmService filmService;
-    private final Storage<Film> filmStorage;
+    private final UserService  userService;
 
     @ResponseBody
     @PostMapping
@@ -40,11 +40,11 @@ public class FilmController {
     @GetMapping("/{id}")
     public Film getFilmById(@PathVariable String id) {
         log.info("Получен запрос на получения фильма с id - {}", id);
-        return filmStorage.get(Integer.parseInt(id));
+        return filmService.getFilm(Integer.parseInt(id));
     }
 
     @ResponseBody
-    @GetMapping
+    @GetMapping()
     public List<Film> getAllFilms() {
         return filmService.getAllFilms();
     }
@@ -62,12 +62,20 @@ public class FilmController {
     public Entity deleteLike(@PathVariable String id, @PathVariable String userId) {
         log.info("Запрос на удаление лайка от пользователя с ID - {}.", userId);
         filmService.deleteLike(Integer.parseInt(id), Integer.parseInt(userId));
+        userService.getUser(Integer.parseInt(userId));
         return filmService.getFilm(Integer.parseInt(id));
     }
 
     @ResponseBody
     @GetMapping("/popular")
-    public List<Film> getTopFilm(@RequestParam(defaultValue = "10") String count) {
+    public List<Film> getTopTenFilm(@RequestParam(defaultValue = "10") String count) {
+        log.info("Запрос на получение {} самых популярных фильмов.", count);
+        return filmService.getTopFilms(Integer.parseInt(count));
+    }
+
+    @ResponseBody
+    @GetMapping("/popular/{count}")
+    public List<Film> getTopFilm(@PathVariable String count) {
         log.info("Запрос на получение {} самых популярных фильмов.", count);
         return filmService.getTopFilms(Integer.parseInt(count));
     }
