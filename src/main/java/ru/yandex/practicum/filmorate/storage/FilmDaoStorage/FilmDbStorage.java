@@ -109,8 +109,6 @@ public class FilmDbStorage implements FilmStorage {
         }
     }
 
-    ;
-
     @Override
     public void addLike(int filmId, int userId) {
         String sqlQuery = "INSERT INTO LIKES (FILM_ID, USER_ID) VALUES ( ?, ? )";
@@ -137,6 +135,21 @@ public class FilmDbStorage implements FilmStorage {
                 "ORDER BY film_likes DESC " +
                 "LIMIT ?";
         return jdbcTemplate.query(sqlQuery, new FilmMapper(), count);
+    }
+
+    @Override
+    public List<Film> searchFilms(String query, String by) {
+        String sqlQuery;
+        if (by.contains("title")) {
+            sqlQuery = "SELECT * FROM FILMS WHERE NAME LIKE '% ? %'";
+        } else if (by.contains("director")) {
+            sqlQuery = "SELECT * FROM FILMS WHERE FILM_ID IN (SELECT FILM_ID FROM )";
+        } else if (by.contains("title") && by.contains("director")) {
+            sqlQuery = "";
+        } else {
+            throw new NotFoundException("Параметр поиска задан не корректно - " + by);
+        }
+            return jdbcTemplate.query(sqlQuery, new FilmMapper(), query);
     }
 
     @Override

@@ -21,4 +21,6 @@ public interface FilmStorage {
     List<Film> getTopFilms(int count);
 
     List<Film> getFilmsOfGenre(Genre genre);
+
+    List<Film> searchFilms(String query, String by);
 }
