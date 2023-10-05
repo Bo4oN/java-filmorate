@@ -20,7 +20,7 @@ import javax.validation.Valid;
 public class FilmController {
 
     private final FilmService filmService;
-    private final UserService  userService;
+    private final UserService userService;
 
     @ResponseBody
     @PostMapping
@@ -41,6 +41,13 @@ public class FilmController {
     public Film getFilmById(@PathVariable String id) {
         log.info("Получен запрос на получения фильма с id - {}", id);
         return filmService.getFilm(Integer.parseInt(id));
+    }
+
+    @ResponseBody
+    @DeleteMapping("/{id}")
+    public String deleteFilmById(@PathVariable String id) {
+        log.info("Получен запрос на удаление фильма с id - {}", id);
+        return filmService.deleteFilm(Integer.parseInt(id));
     }
 
     @ResponseBody

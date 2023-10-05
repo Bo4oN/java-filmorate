@@ -41,6 +41,13 @@ public class UserController {
     }
 
     @ResponseBody
+    @DeleteMapping("/{id}")
+    public String deleteUserById(@PathVariable String id) {
+        log.info("Получен запрос на удаление пользователя с ID - {}.", id);
+        return userService.deleteUser(Integer.parseInt(id));
+    }
+
+    @ResponseBody
     @GetMapping
     public List<User> getUsers() {
         return userService.getUsers();
