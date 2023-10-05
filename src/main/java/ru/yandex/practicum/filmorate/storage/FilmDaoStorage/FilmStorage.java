@@ -2,6 +2,7 @@ package ru.yandex.practicum.filmorate.storage.FilmDaoStorage;
 
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
+import ru.yandex.practicum.filmorate.model.FilmSortBy;
 
 import java.util.List;
 
@@ -21,4 +22,7 @@ public interface FilmStorage {
     List<Film> getTopFilms(int count);
 
     List<Film> getFilmsOfGenre(Genre genre);
+
+    List<Film> getFilmDirector(int directorId, FilmSortBy sortBy);
+
 }

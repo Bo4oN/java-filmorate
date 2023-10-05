@@ -23,6 +23,7 @@ public class Film extends Entity {
     @NotNull
     private Mpa mpa;
     private LinkedHashSet<Genre> genres;
+    private LinkedHashSet<Director> directors;
 
     public Film(int id, String name, String description, LocalDate releaseDate, Long duration, Mpa mpa) {
         this.setId(id);

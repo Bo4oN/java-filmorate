@@ -5,6 +5,7 @@ import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.model.Director;
 import ru.yandex.practicum.filmorate.service.DirectorService;
 
+import javax.validation.Valid;
 import java.util.List;
 
 
@@ -15,17 +16,17 @@ public class DirectorController {
     private final DirectorService service;
 
     @PostMapping
-    public Director create(Director director) {
+    public Director create(@RequestBody Director director) {
         return service.create(director);
     }
 
     @PutMapping
-    public Director update(Director director) {
+    public Director update(@RequestBody @Valid Director director) {
         return service.update(director);
     }
 
     @GetMapping("/{id}")
-    public Director get(int id) {
+    public Director get(@PathVariable int id) {
         return service.get(id);
     }
 
@@ -35,7 +36,7 @@ public class DirectorController {
     }
 
     @DeleteMapping("/{id}")
-    public void delete(int id) {
+    public void delete(@PathVariable int id) {
         service.delete(id);
     }
 }

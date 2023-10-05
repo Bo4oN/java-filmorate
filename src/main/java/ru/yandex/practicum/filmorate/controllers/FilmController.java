@@ -1,17 +1,15 @@
 package ru.yandex.practicum.filmorate.controllers;
 
 import lombok.RequiredArgsConstructor;
-import ru.yandex.practicum.filmorate.model.Entity;
-import ru.yandex.practicum.filmorate.model.Film;
-
-import java.util.List;
-
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
+import ru.yandex.practicum.filmorate.model.Entity;
+import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.service.FilmService;
 import ru.yandex.practicum.filmorate.service.UserService;
 
 import javax.validation.Valid;
+import java.util.List;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -20,7 +18,7 @@ import javax.validation.Valid;
 public class FilmController {
 
     private final FilmService filmService;
-    private final UserService  userService;
+    private final UserService userService;
 
     @ResponseBody
     @PostMapping
@@ -78,5 +76,18 @@ public class FilmController {
     public List<Film> getTopFilm(@PathVariable String count) {
         log.info("Запрос на получение {} самых популярных фильмов.", count);
         return filmService.getTopFilms(Integer.parseInt(count));
+    }
+
+    /**
+     * Возвращает список фильмов режиссера
+     * отсортированных по количеству лайков или году выпуска.
+     *
+     * @param sortBy sortBy=[year,likes]
+     * @return список фильмов режиссера
+     */
+    @RequestMapping("/director/{directorId}")
+    @GetMapping
+    public List<Film> getDirectorFilms(@PathVariable int directorId, @RequestParam(name = "sortBy", defaultValue = "none") String sortBy) {
+        return filmService.getDirectorFilms(directorId, sortBy.toUpperCase());
     }
 }

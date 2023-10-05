@@ -9,9 +9,8 @@ import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
 import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.exceptions.NotFoundException;
-import ru.yandex.practicum.filmorate.model.Film;
-import ru.yandex.practicum.filmorate.model.Genre;
-import ru.yandex.practicum.filmorate.model.Mpa;
+import ru.yandex.practicum.filmorate.model.*;
+import ru.yandex.practicum.filmorate.storage.DirectorDaoStorage.DirectorStorage;
 import ru.yandex.practicum.filmorate.storage.GenreDaoStorage.GenreStorage;
 
 import java.sql.ResultSet;
@@ -26,6 +25,7 @@ public class FilmDbStorage implements FilmStorage {
 
     private final JdbcTemplate jdbcTemplate;
     private final GenreStorage genreStorage;
+    private final DirectorStorage directorStorage;
 
     @Override
     public Film add(Film film) {
@@ -43,6 +43,9 @@ public class FilmDbStorage implements FilmStorage {
 
         if (film.getGenres() != null) {
             genreStorage.addFilmToGenre(film);
+        }
+        if (film.getDirectors() != null) {
+            directorStorage.addFilmDirector(film);
         }
         return film;
     }
@@ -64,6 +67,9 @@ public class FilmDbStorage implements FilmStorage {
 
             if (film.getGenres() != null) {
                 genreStorage.updateFilmToGenre(film);
+            }
+            if (film.getDirectors() != null) {
+                directorStorage.updateFilmDirector(film);
             }
             return film;
         }
@@ -91,25 +97,6 @@ public class FilmDbStorage implements FilmStorage {
                 "GROUP BY FILMS.FILM_ID, FN, DESCRIPTION, DURATION, RELEASE_DATE, MPA.MPA_ID, MN";
         return jdbcTemplate.query(sqlQuery, new FilmMapper());
     }
-
-    public class FilmMapper implements RowMapper<Film> {
-
-        @Override
-        public Film mapRow(ResultSet rs, int rowNum) throws SQLException {
-            Film film = new Film(rs.getInt("film_id"),
-                    rs.getString("fn"),
-                    rs.getString("description"),
-                    rs.getDate("release_date").toLocalDate(),
-                    rs.getLong("duration"),
-                    new Mpa(rs.getInt("mpa_id"), rs.getString("mn"))
-            );
-            LinkedHashSet<Genre> set = new LinkedHashSet<>(genreStorage.getGenresOfFilm(rs.getInt("film_id")));
-            film.setGenres(set);
-            return film;
-        }
-    }
-
-    ;
 
     @Override
     public void addLike(int filmId, int userId) {
@@ -142,5 +129,59 @@ public class FilmDbStorage implements FilmStorage {
     @Override
     public List<Film> getFilmsOfGenre(Genre genre) {
         return null;
+    }
+
+    /**
+     * Возвращает список фильмов режиссера
+     * отсортированных по количеству лайков или году выпуска.
+     *
+     * @param sortBy sortBy=[year,likes]
+     * @return список фильмов режиссера
+     */
+    @Override
+    public List<Film> getFilmDirector(int directorId, FilmSortBy sortBy) {
+        String sqlQuery = "SELECT F.film_id,"
+                + " F.name FN,"
+                + " F.description,"
+                + " F.duration,"
+                + " F.release_date,"
+                + " MPA.mpa_id,"
+                + " MPA.name MN,"
+                + sortBy.getParams().get("SELECT")
+                + "FROM FILMS F "
+                + "LEFT JOIN LIKES L "
+                + " ON F.FILM_ID = L.FILM_ID "
+                + "LEFT JOIN MPA "
+                + " ON F.MPA_ID = MPA.MPA_ID "
+                + "LEFT JOIN FILMS_DIRECTOR FD "
+                + " ON FD.film_id = F.film_id "
+                + " AND FD.director_id = ? "
+                + "GROUP BY F.FILM_ID "
+                + sortBy.getParams().get("ORDER BY") + ";";
+        return jdbcTemplate.query(sqlQuery, new FilmMapper(), directorId);
+    }
+
+    public class FilmMapper implements RowMapper<Film> {
+        @Override
+        public Film mapRow(ResultSet rs, int rowNum) throws SQLException {
+            int filmId = rs.getInt("film_id");
+            Film film = new Film(filmId,
+                    rs.getString("fn"),
+                    rs.getString("description"),
+                    rs.getDate("release_date").toLocalDate(),
+                    rs.getLong("duration"),
+                    new Mpa(
+                            rs.getInt("mpa_id"),
+                            rs.getString("mn")
+                    )
+            );
+            LinkedHashSet<Genre> genres = new LinkedHashSet<>(genreStorage.getGenresOfFilm(filmId));
+            film.setGenres(genres);
+
+            LinkedHashSet<Director> directors = new LinkedHashSet<>(directorStorage.getFilmDirector(filmId));
+            film.setDirectors(directors);
+
+            return film;
+        }
     }
 }
