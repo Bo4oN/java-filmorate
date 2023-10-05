@@ -118,6 +118,7 @@ public class UserDbStorage implements UserStorage {
 
     @Override
     public List<User> getFriendsList(int id) {
+        get(id);
         String sqlQuery = "SELECT user_id, name, login, email, birthday" +
                 " FROM users WHERE USER_ID" +
                 " IN (SELECT USER2_ID FROM friends WHERE USER1_ID = ?);";
