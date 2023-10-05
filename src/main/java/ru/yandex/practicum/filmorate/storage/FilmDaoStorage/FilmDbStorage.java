@@ -109,8 +109,6 @@ public class FilmDbStorage implements FilmStorage {
         }
     }
 
-    ;
-
     @Override
     public void addLike(int filmId, int userId) {
         String sqlQuery = "INSERT INTO LIKES (FILM_ID, USER_ID) VALUES ( ?, ? )";

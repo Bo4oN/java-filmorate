@@ -9,10 +9,19 @@ import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
 import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.exceptions.NotFoundException;
+import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.Genre;
+import ru.yandex.practicum.filmorate.model.Mpa;
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.storage.FilmDaoStorage.FilmDbStorage;
+import ru.yandex.practicum.filmorate.storage.FilmDaoStorage.FilmDbStorage.FilmMapper;
+import ru.yandex.practicum.filmorate.storage.GenreDaoStorage.GenreDbStorage;
+import ru.yandex.practicum.filmorate.storage.GenreDaoStorage.GenreStorage;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.LinkedHashSet;
 import java.util.List;
 
 @Repository
@@ -21,6 +30,7 @@ import java.util.List;
 public class UserDbStorage implements UserStorage {
 
     private final JdbcTemplate jdbcTemplate;
+    private final GenreStorage genreStorage;
 
     @Override
     public User add(User data) {
@@ -57,7 +67,7 @@ public class UserDbStorage implements UserStorage {
     @Override
     public User delete(int id) {
         String sqlQuery = "DELETE FROM users where user_id=?;";
-        return  jdbcTemplate.queryForObject(sqlQuery, new UserMapper(), id);
+        return jdbcTemplate.queryForObject(sqlQuery, new UserMapper(), id);
     }
 
     @Override
@@ -128,5 +138,66 @@ public class UserDbStorage implements UserStorage {
                 " WHERE friends.USER1_ID = ? AND friends.USER2_ID IN " +
                 " (SELECT USER2_ID FROM friends WHERE USER1_ID = ?); ";
         return jdbcTemplate.query(sqlQuery, new UserMapper(), firstId, secondId);
+    }
+
+    @Override
+    public List<Film> getRecommendations(int id) {
+        try {
+            get(id);
+        } catch (EmptyResultDataAccessException e) {
+            throw new NotFoundException("Пользователя с ID - " + id + " нет в базе.");
+        }
+        try {
+            String sql = "SELECT l2.user_id " +
+                    "FROM likes l1 " +
+                    "JOIN likes l2 ON l1.film_id = l2.film_id AND l1.user_id <> l2.user_id " +
+                    "WHERE l1.user_id = ? " +
+                    "GROUP BY l2.user_id " +
+                    "ORDER BY COUNT(DISTINCT l1.film_id) DESC " +
+                    "LIMIT 1; "; // возвращает id похожего пользователя
+
+            Integer user2Id = jdbcTemplate.queryForObject(sql, Integer.class, id);
+
+            String sql2 = "SELECT DISTINCT film_id " +
+                    "FROM likes " +
+                    "WHERE user_id = ? " +
+                    "AND film_id NOT IN ( " +
+                    "SELECT film_id " +
+                    "FROM likes " +
+                    "WHERE user_id = ?); "; // возвращает список id фильмов
+
+            List<Integer> recommendedFilmsId = jdbcTemplate.queryForList(sql2, Integer.class, id, user2Id);
+
+            List<Film> recommendedFilms = new ArrayList<>();
+
+            String filmSql = "SELECT FILM_ID, FILMS.NAME AS FN, DESCRIPTION, DURATION, RELEASE_DATE, " +
+                    "MPA.MPA_ID, MPA.NAME AS MN  " +
+                    "FROM FILMS LEFT JOIN MPA ON FILMS.MPA_ID = MPA.MPA_ID WHERE FILM_ID = ? " +
+                    "GROUP BY FILMS.FILM_ID, FN, DESCRIPTION, DURATION, RELEASE_DATE, MPA.MPA_ID, MN";
+
+            for (Integer filmId : recommendedFilmsId) {
+                Film film = jdbcTemplate.queryForObject(filmSql, new RowMapper<Film>() {
+                    @Override
+                    public Film mapRow(ResultSet rs, int rowNum) throws SQLException {
+                        Film film = new Film(rs.getInt("film_id"),
+                                rs.getString("fn"),
+                                rs.getString("description"),
+                                rs.getDate("release_date").toLocalDate(),
+                                rs.getLong("duration"),
+                                new Mpa(rs.getInt("mpa_id"), rs.getString("mn"))
+                        );
+                        LinkedHashSet<Genre> set =
+                                new LinkedHashSet<>(genreStorage.getGenresOfFilm(rs.getInt("film_id")));
+                        film.setGenres(set);
+                        return film;
+                    }
+                }, filmId);
+                recommendedFilms.add(film);
+            }
+
+            return recommendedFilms;
+        } catch (EmptyResultDataAccessException e) {
+            return List.of();
+        }
     }
 }
