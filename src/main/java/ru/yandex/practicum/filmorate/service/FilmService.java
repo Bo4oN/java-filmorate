@@ -53,10 +53,12 @@ public class FilmService {
     }
 
     public List<Film> getDirectorFilms(int directorId, String sortBy) {
-        return storage.getFilmDirector(
+        List<Film> directorFilms = storage.getFilmDirector(
                 directorId,
                 FilmSortBy.valueOf(sortBy.toUpperCase())
         );
+        log.info("Director Films\n{}", directorFilms);
+        return directorFilms;
     }
 
     private void validationFilm(Film film) {

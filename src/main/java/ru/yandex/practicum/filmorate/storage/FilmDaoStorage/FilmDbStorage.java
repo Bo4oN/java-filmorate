@@ -13,19 +13,17 @@ import ru.yandex.practicum.filmorate.model.*;
 import ru.yandex.practicum.filmorate.storage.DirectorDaoStorage.DirectorStorage;
 import ru.yandex.practicum.filmorate.storage.GenreDaoStorage.GenreStorage;
 
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
 
 @Repository
 @Slf4j
 @RequiredArgsConstructor
 public class FilmDbStorage implements FilmStorage {
-
     private final JdbcTemplate jdbcTemplate;
     private final GenreStorage genreStorage;
     private final DirectorStorage directorStorage;
+    private final RowMapper<Film> rowMapper;
 
     @Override
     public Film add(Film film) {
@@ -41,13 +39,7 @@ public class FilmDbStorage implements FilmStorage {
 
         film.setId(simpleJdbcInsert.executeAndReturnKey(params).intValue());
 
-        if (film.getGenres() != null) {
-            genreStorage.addFilmToGenre(film);
-        }
-        if (film.getDirectors() != null) {
-            directorStorage.addFilmDirector(film);
-        }
-        return film;
+        return updateFilmData(film);
     }
 
     @Override
@@ -65,13 +57,7 @@ public class FilmDbStorage implements FilmStorage {
         if (rowsCount > 0) {
             log.info("Фильм с ID = " + film.getId() + " изменен.");
 
-            if (film.getGenres() != null) {
-                genreStorage.updateFilmToGenre(film);
-            }
-            if (film.getDirectors() != null) {
-                directorStorage.updateFilmDirector(film);
-            }
-            return film;
+            return updateFilmData(film);
         }
         throw new NotFoundException("Фильм не найден.");
     }
@@ -83,7 +69,7 @@ public class FilmDbStorage implements FilmStorage {
                 "FROM FILMS LEFT JOIN MPA ON FILMS.MPA_ID = MPA.MPA_ID WHERE FILM_ID = ? " +
                 "GROUP BY FILMS.FILM_ID, FN, DESCRIPTION, DURATION, RELEASE_DATE, MPA.MPA_ID, MN";
         try {
-            return jdbcTemplate.queryForObject(sqlQuery, new FilmMapper(), id);
+            return jdbcTemplate.queryForObject(sqlQuery, rowMapper, id);
         } catch (EmptyResultDataAccessException e) {
             throw new NotFoundException("Фильма с ID - " + id + " нет в базе.");
         }
@@ -95,7 +81,7 @@ public class FilmDbStorage implements FilmStorage {
                 "MPA.MPA_ID, MPA.NAME AS MN  " +
                 "FROM FILMS LEFT JOIN MPA ON FILMS.MPA_ID = MPA.MPA_ID " +
                 "GROUP BY FILMS.FILM_ID, FN, DESCRIPTION, DURATION, RELEASE_DATE, MPA.MPA_ID, MN";
-        return jdbcTemplate.query(sqlQuery, new FilmMapper());
+        return jdbcTemplate.query(sqlQuery, rowMapper);
     }
 
     @Override
@@ -123,7 +109,7 @@ public class FilmDbStorage implements FilmStorage {
                 "GROUP BY FILMS.FILM_ID, FN, DESCRIPTION, DURATION, RELEASE_DATE, MPA.MPA_ID, MN " +
                 "ORDER BY film_likes DESC " +
                 "LIMIT ?";
-        return jdbcTemplate.query(sqlQuery, new FilmMapper(), count);
+        return jdbcTemplate.query(sqlQuery, rowMapper, count);
     }
 
     @Override
@@ -135,11 +121,12 @@ public class FilmDbStorage implements FilmStorage {
      * Возвращает список фильмов режиссера
      * отсортированных по количеству лайков или году выпуска.
      *
-     * @param sortBy sortBy=[year,likes]
+     * @param filmSortBy filmSortBy=[year,likes]
      * @return список фильмов режиссера
      */
     @Override
-    public List<Film> getFilmDirector(int directorId, FilmSortBy sortBy) {
+    public List<Film> getFilmDirector(int directorId, FilmSortBy filmSortBy) {
+        Map<String, String> params = filmSortBy.getParams();
         String sqlQuery = "SELECT F.film_id,"
                 + " F.name FN,"
                 + " F.description,"
@@ -147,41 +134,24 @@ public class FilmDbStorage implements FilmStorage {
                 + " F.release_date,"
                 + " MPA.mpa_id,"
                 + " MPA.name MN,"
-                + sortBy.getParams().get("SELECT")
-                + "FROM FILMS F "
-                + "LEFT JOIN LIKES L "
-                + " ON F.FILM_ID = L.FILM_ID "
-                + "LEFT JOIN MPA "
-                + " ON F.MPA_ID = MPA.MPA_ID "
-                + "LEFT JOIN FILMS_DIRECTOR FD "
-                + " ON FD.film_id = F.film_id "
-                + " AND FD.director_id = ? "
-                + "GROUP BY F.FILM_ID "
-                + sortBy.getParams().get("ORDER BY") + ";";
-        return jdbcTemplate.query(sqlQuery, new FilmMapper(), directorId);
+                + params.get("SELECT")
+                + "FROM FILMS_DIRECTOR FD "
+                + "LEFT JOIN FILMS F ON FD.film_id = F.film_id "
+                + params.get("LEFT JOIN")
+                + "LEFT JOIN MPA ON F.MPA_ID = MPA.MPA_ID "
+                + " WHERE FD.director_id = ? "
+//                + "GROUP BY F.FILM_ID "
+                + params.get("ORDER BY") + ";";
+        return jdbcTemplate.query(sqlQuery, rowMapper, directorId);
     }
 
-    public class FilmMapper implements RowMapper<Film> {
-        @Override
-        public Film mapRow(ResultSet rs, int rowNum) throws SQLException {
-            int filmId = rs.getInt("film_id");
-            Film film = new Film(filmId,
-                    rs.getString("fn"),
-                    rs.getString("description"),
-                    rs.getDate("release_date").toLocalDate(),
-                    rs.getLong("duration"),
-                    new Mpa(
-                            rs.getInt("mpa_id"),
-                            rs.getString("mn")
-                    )
-            );
-            LinkedHashSet<Genre> genres = new LinkedHashSet<>(genreStorage.getGenresOfFilm(filmId));
-            film.setGenres(genres);
-
-            LinkedHashSet<Director> directors = new LinkedHashSet<>(directorStorage.getFilmDirector(filmId));
-            film.setDirectors(directors);
-
-            return film;
+    private Film updateFilmData(Film film) {
+        if (film.getGenres() != null) {
+            genreStorage.updateFilmToGenre(film);
         }
+        if (film.getDirectors() != null) {
+            directorStorage.updateFilmDirector(film);
+        }
+        return get(film.getId());
     }
 }

@@ -14,6 +14,7 @@ import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.context.junit4.SpringRunner;
 import ru.yandex.practicum.filmorate.controllers.ErrorHandler;
 import ru.yandex.practicum.filmorate.exceptions.NotFoundException;
+import ru.yandex.practicum.filmorate.exceptions.ValidationException;
 import ru.yandex.practicum.filmorate.model.Director;
 import ru.yandex.practicum.filmorate.storage.DirectorDaoStorage.DirectorDbStorage;
 import ru.yandex.practicum.filmorate.storage.DirectorDaoStorage.DirectorRowMapper;
@@ -71,11 +72,10 @@ class DirectorServiceTest {
     @Test
     void createWithBlankName() {
         Director director = demoDirectors.get(2);
-//        service.create(director);
         try {
             service.create(director);
-        } catch (RuntimeException e) {
-            assertEquals("A director with that name ( ) already exists", e.getMessage());
+        } catch (ValidationException e) {
+            assertEquals("A director with that name ( ) is not valid", e.getMessage());
         }
     }
 
