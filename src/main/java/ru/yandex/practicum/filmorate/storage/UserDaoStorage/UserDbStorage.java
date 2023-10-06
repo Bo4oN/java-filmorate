@@ -166,7 +166,7 @@ public class UserDbStorage implements UserStorage {
                     "FROM likes " +
                     "WHERE user_id = ?); "; // возвращает список id фильмов
 
-            List<Integer> recommendedFilmsId = jdbcTemplate.queryForList(sql2, Integer.class, id, user2Id);
+            List<Integer> recommendedFilmsId = jdbcTemplate.queryForList(sql2, Integer.class, user2Id, id);
 
             List<Film> recommendedFilms = new ArrayList<>();
 
