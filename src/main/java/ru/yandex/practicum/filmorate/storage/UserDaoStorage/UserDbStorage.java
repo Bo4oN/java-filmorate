@@ -13,9 +13,6 @@ import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.model.Mpa;
 import ru.yandex.practicum.filmorate.model.User;
-import ru.yandex.practicum.filmorate.storage.FilmDaoStorage.FilmDbStorage;
-import ru.yandex.practicum.filmorate.storage.FilmDaoStorage.FilmDbStorage.FilmMapper;
-import ru.yandex.practicum.filmorate.storage.GenreDaoStorage.GenreDbStorage;
 import ru.yandex.practicum.filmorate.storage.GenreDaoStorage.GenreStorage;
 
 import java.sql.ResultSet;
