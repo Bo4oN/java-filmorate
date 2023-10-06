@@ -36,16 +36,16 @@ public class FilmController {
 
     @ResponseBody
     @GetMapping("/{id}")
-    public Film getFilmById(@PathVariable String id) {
+    public Film getFilmById(@PathVariable int id) {
         log.info("Получен запрос на получения фильма с id - {}", id);
-        return filmService.getFilm(Integer.parseInt(id));
+        return filmService.getFilm(id);
     }
 
     @ResponseBody
     @DeleteMapping("/{id}")
-    public void deleteFilmById(@PathVariable String id) {
+    public void deleteFilmById(@PathVariable int id) {
         log.info("Получен запрос на удаление фильма с id - {}", id);
-        filmService.deleteFilm(Integer.parseInt(id));
+        filmService.deleteFilm(id);
     }
 
     @ResponseBody
@@ -56,33 +56,33 @@ public class FilmController {
 
     @ResponseBody
     @PutMapping("/{id}/like/{userId}")
-    public Entity addLike(@PathVariable String id, @PathVariable String userId) {
+    public Entity addLike(@PathVariable int id, @PathVariable int userId) {
         log.info("Запрос на добавление лайка от пользователя с ID - {}.", userId);
-        filmService.addLike(Integer.parseInt(id), Integer.parseInt(userId));
-        return filmService.getFilm(Integer.parseInt(id));
+        filmService.addLike(id, userId);
+        return filmService.getFilm(id);
     }
 
     @ResponseBody
     @DeleteMapping("/{id}/like/{userId}")
-    public Entity deleteLike(@PathVariable String id, @PathVariable String userId) {
+    public Entity deleteLike(@PathVariable int id, @PathVariable int userId) {
         log.info("Запрос на удаление лайка от пользователя с ID - {}.", userId);
-        filmService.deleteLike(Integer.parseInt(id), Integer.parseInt(userId));
-        userService.getUser(Integer.parseInt(userId));
-        return filmService.getFilm(Integer.parseInt(id));
+        filmService.deleteLike(id, userId);
+        userService.getUser(userId);
+        return filmService.getFilm(id);
     }
 
     @ResponseBody
     @GetMapping("/popular")
-    public List<Film> getTopTenFilm(@RequestParam(defaultValue = "10") String count) {
+    public List<Film> getTopTenFilm(@RequestParam(defaultValue = "10") int count) {
         log.info("Запрос на получение {} самых популярных фильмов.", count);
-        return filmService.getTopFilms(Integer.parseInt(count));
+        return filmService.getTopFilms(count);
     }
 
     @ResponseBody
     @GetMapping("/popular/{count}")
-    public List<Film> getTopFilm(@PathVariable String count) {
+    public List<Film> getTopFilm(@PathVariable int count) {
         log.info("Запрос на получение {} самых популярных фильмов.", count);
-        return filmService.getTopFilms(Integer.parseInt(count));
+        return filmService.getTopFilms(count);
     }
 
     /**
@@ -94,7 +94,10 @@ public class FilmController {
      */
     @RequestMapping("/director/{directorId}")
     @GetMapping
-    public List<Film> getDirectorFilms(@PathVariable int directorId, @RequestParam(name = "sortBy", defaultValue = "none") String sortBy) {
-        return filmService.getDirectorFilms(directorId, sortBy.toUpperCase());
+    public List<Film> getDirectorFilms(
+            @PathVariable int directorId,
+            @RequestParam(name = "sortBy", defaultValue = "none") String sortBy) {
+
+        return filmService.getDirectorFilms(directorId, sortBy);
     }
 }

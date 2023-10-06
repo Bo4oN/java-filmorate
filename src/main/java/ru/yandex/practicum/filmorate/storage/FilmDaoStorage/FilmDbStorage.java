@@ -13,7 +13,6 @@ import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.FilmSortBy;
 import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.storage.DirectorDaoStorage.DirectorStorage;
-import ru.yandex.practicum.filmorate.model.Mpa;
 import ru.yandex.practicum.filmorate.storage.FeedDBStorage.FeedStorage;
 import ru.yandex.practicum.filmorate.storage.GenreDaoStorage.GenreStorage;
 
@@ -25,9 +24,9 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class FilmDbStorage implements FilmStorage {
     private final JdbcTemplate jdbcTemplate;
+    private final RowMapper<Film> rowMapper;
     private final GenreStorage genreStorage;
     private final DirectorStorage directorStorage;
-    private final RowMapper<Film> rowMapper;
     private final FeedStorage feedStorage;
 
     @Override

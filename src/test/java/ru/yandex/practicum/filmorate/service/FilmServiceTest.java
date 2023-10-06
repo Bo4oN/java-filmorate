@@ -18,6 +18,8 @@ import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.storage.DirectorDaoStorage.DirectorDbStorage;
 import ru.yandex.practicum.filmorate.storage.DirectorDaoStorage.DirectorRowMapper;
 import ru.yandex.practicum.filmorate.storage.DirectorDaoStorage.DirectorStorage;
+import ru.yandex.practicum.filmorate.storage.FeedDBStorage.FeedDBStorage;
+import ru.yandex.practicum.filmorate.storage.FeedDBStorage.FeedStorage;
 import ru.yandex.practicum.filmorate.storage.FilmDaoStorage.FilmDbStorage;
 import ru.yandex.practicum.filmorate.storage.FilmDaoStorage.FilmRowMapper;
 import ru.yandex.practicum.filmorate.storage.FilmDaoStorage.FilmStorage;
@@ -34,21 +36,29 @@ import static org.springframework.test.context.jdbc.Sql.ExecutionPhase.AFTER_TES
 @RunWith(SpringRunner.class)
 @SpringBootTest
 @TestPropertySource("/application-test.properties")
-@EnableAutoConfiguration(exclude = {BatchAutoConfiguration.class})
-@Sql(value = {
-        "/sql/films/create-films-after.sql"
+@EnableAutoConfiguration(exclude = {BatchAutoConfiguration.class})@Sql(value = {
+        "/sql/directors/create-directors-after.sql",
+        "/sql/films/create-films-after.sql",
+        "/sql/users/create-users-after.sql",
+        "/sql/genres/create-film-genres-after.sql",
+        "/sql/genres/create-genres-after.sql"
 }, executionPhase = AFTER_TEST_METHOD)
 class FilmServiceTest {
     private final DataSource dataSource = new EmbeddedDatabaseBuilder()
             .setType(EmbeddedDatabaseType.H2)
             .addScript("classpath:/sql/create-directors-schema.sql")
             .addScript("classpath:/sql/create-films-schema.sql")
+            .addScript("classpath:/sql/create-users-schema.sql")
             .addScript("classpath:/sql/directors/create-directors-before.sql")
             .addScript("classpath:/sql/films/create-films-before.sql")
+            .addScript("classpath:/sql/users/create-users-before.sql")
+            .addScript("classpath:/sql/genres/create-genres-before.sql")
+            .addScript("classpath:/sql/genres/create-film-genres-before.sql")
             .build();
     private final JdbcTemplate jdbc = new JdbcTemplate(dataSource);
     private final RowMapper<Genre> genreRowMapper = new GenreRowMapper();
     private final RowMapper<Director> directorRowMapper = new DirectorRowMapper();
+    private final FeedStorage feedStorage = new FeedDBStorage(jdbc);
     private final GenreStorage genreStorage =
             new GenreDbStorage(
                     jdbc,
@@ -67,9 +77,10 @@ class FilmServiceTest {
     private final FilmStorage filmStorage =
             new FilmDbStorage(
                     jdbc,
+                    filmRowMapper,
                     genreStorage,
                     directorStorage,
-                    filmRowMapper
+                    feedStorage
             );
     private final FilmService service = new FilmService(filmStorage);
     private final DirectorService directorService = new DirectorService(directorStorage);
@@ -83,4 +94,15 @@ class FilmServiceTest {
         assertEquals("Lolita", directorFilms.get(0).getName());
         assertEquals("Eyes Wide Shut", directorFilms.get(7).getName());
     }
+
+    @Test
+    void getDirectorFilmsSortByLikes() {
+        Director director = directorService.get(1);
+        assertEquals("Stanley Kubrick", director.getName());
+
+        List<Film> directorFilms = service.getDirectorFilms(director.getId(), "likes");
+        assertEquals("2001: A Space Odyssey", directorFilms.get(0).getName());
+        assertEquals("Eyes Wide Shut", directorFilms.get(7).getName());
+    }
+
 }
