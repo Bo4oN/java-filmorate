@@ -10,15 +10,18 @@ import java.util.Map;
  */
 public enum FilmSortBy {
     YEAR(Map.of(
-            "SELECT", " EXTRACT(YEAR FROM TIMESTAMP F.release_date) YEAR_RELEASE ",
-            "ORDER BY", " ORDER BY YEAR_RELEASE DESC ")
+            "SELECT", " EXTRACT(YEAR FROM CAST (F.release_date as DATE)) YEAR_RELEASE ",
+            "LEFT JOIN", "",
+            "ORDER BY", " ORDER BY YEAR_RELEASE ASC")
     ),
     LIKES(Map.of(
             "SELECT", " COUNT(L.like_id) FILM_LIKES ",
-            "ORDER BY", " ORDER BY film_likes DESC ")
+            "LEFT JOIN", " LEFT JOIN LIKES L ON F.FILM_ID = L.FILM_ID ",
+            "ORDER BY", " ORDER BY FILM_LIKES ")
     ),
     NONE(Map.of(
             "SELECT", "",
+            "LEFT JOIN", "",
             "ORDER BY", "")
     );
 

@@ -2,13 +2,10 @@ package ru.yandex.practicum.filmorate.storage.GenreDaoStorage;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.BatchPreparedStatementSetter;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
-import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
+import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
-
 import ru.yandex.practicum.filmorate.exceptions.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
@@ -24,31 +21,21 @@ import java.util.Set;
 @RequiredArgsConstructor
 @Slf4j
 public class GenreDbStorage implements GenreStorage {
-
-    private final NamedParameterJdbcTemplate namedParameterJdbcTemplate;
     private final JdbcTemplate jdbcTemplate;
+    private final RowMapper<Genre> rowMapper;
 
     @Override
     public Genre getGenre(int id) {
-        String sqlQuery = "SELECT * FROM GENRE_TYPES WHERE GENRE_TYPES_ID = :genre_types_id";
-        MapSqlParameterSource params = new MapSqlParameterSource("genre_types_id", id);
-        try {
-            return namedParameterJdbcTemplate.queryForObject(
-                sqlQuery,
-                    params,
-                    (rs, rowNum) -> new Genre(rs.getInt("genre_types_id"), rs.getString("name"))
-                );
-        } catch (EmptyResultDataAccessException e) {
-            throw new NotFoundException("Жанра с ID - " + id + " нет в базе.");
-        }
+        String sqlQuery = "SELECT * FROM GENRE_TYPES WHERE GENRE_TYPES_ID = ?";
+        return jdbcTemplate.query(sqlQuery, rowMapper, id)
+                .stream().findFirst()
+                .orElseThrow(() -> new NotFoundException("Жанра с ID - " + id + " нет в базе."));
     }
 
     @Override
     public List<Genre> getAllGenre() {
         String sqlQuery = "SELECT * FROM GENRE_TYPES";
-        return jdbcTemplate.query(sqlQuery,
-                (rs, rowNum) -> new Genre(rs.getInt("genre_types_id"), rs.getString("name"))
-        );
+        return jdbcTemplate.query(sqlQuery, rowMapper);
     }
 
     @Override
@@ -71,17 +58,20 @@ public class GenreDbStorage implements GenreStorage {
 
     @Override
     public void updateFilmToGenre(Film film) {
+        deleteFilmToGenre(film);
+        addFilmToGenre(film);
+    }
+
+    @Override
+    public void deleteFilmToGenre(Film film) {
         String sqlQuery = "DELETE FROM genres WHERE film_id = ?";
         jdbcTemplate.update(sqlQuery, film.getId());
-        addFilmToGenre(film);
     }
 
     @Override
     public Set<Genre> getGenresOfFilm(int filmId) {
         String sqlQuery = "SELECT * FROM GENRE_TYPES WHERE GENRE_TYPES_ID IN" +
                 " (SELECT DISTINCT GENRE_TYPES_ID FROM GENRES WHERE FILM_ID = ?)";
-        return new LinkedHashSet<>(jdbcTemplate.query(sqlQuery,
-                (rs, rowNum) -> new Genre(rs.getInt("genre_types_id"), rs.getString("name")),
-                filmId));
+        return new LinkedHashSet<>(jdbcTemplate.query(sqlQuery, rowMapper, filmId));
     }
 }

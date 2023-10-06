@@ -23,5 +23,7 @@ public interface DirectorStorage {
 
     void updateFilmDirector(Film film);
 
+    void deleteFilmDirector(Film film);
+
     Set<Director> getFilmDirector(int filmId);
 }

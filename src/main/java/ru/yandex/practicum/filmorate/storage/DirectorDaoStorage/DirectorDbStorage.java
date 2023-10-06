@@ -148,10 +148,16 @@ public class DirectorDbStorage implements DirectorStorage {
      */
     @Override
     public void updateFilmDirector(Film film) {
-        String sqlQuery = "DELETE FROM FILMS_DIRECTOR WHERE film_id = ?";
-        jdbcTemplate.update(sqlQuery, film.getId());
+        deleteFilmDirector(film);
         addFilmDirector(film);
     }
+
+    @Override
+    public void deleteFilmDirector(Film film) {
+        String sqlQuery = "DELETE FROM FILMS_DIRECTOR WHERE film_id = ?";
+        jdbcTemplate.update(sqlQuery, film.getId());
+    }
+
 
     /**
      * get all the film directors
@@ -168,6 +174,4 @@ public class DirectorDbStorage implements DirectorStorage {
                 + ");";
         return new LinkedHashSet<>(jdbcTemplate.query(sqlQuery, rowMapper, filmId));
     }
-
-
 }
