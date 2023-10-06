@@ -9,7 +9,9 @@ import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
 import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.exceptions.NotFoundException;
-import ru.yandex.practicum.filmorate.model.*;
+import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.FilmSortBy;
+import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.storage.DirectorDaoStorage.DirectorStorage;
 import ru.yandex.practicum.filmorate.storage.GenreDaoStorage.GenreStorage;
 
@@ -44,6 +46,7 @@ public class FilmDbStorage implements FilmStorage {
 
     @Override
     public Film update(Film film) {
+        int filmId = film.getId();
         String sqlQuery =
                 "UPDATE FILMS SET MPA_ID = ?, NAME = ?, DESCRIPTION = ?, DURATION = ?, RELEASE_DATE = ?" +
                         "WHERE FILM_ID = ?";
@@ -53,13 +56,15 @@ public class FilmDbStorage implements FilmStorage {
                 film.getDescription(),
                 film.getDuration(),
                 film.getReleaseDate(),
-                film.getId());
+                filmId);
         if (rowsCount > 0) {
-            log.info("Фильм с ID = " + film.getId() + " изменен.");
+            log.info("Фильм с ID = {} изменен.", filmId);
 
             return updateFilmData(film);
         }
-        throw new NotFoundException("Фильм не найден.");
+        String error = String.format("Фильм с ID = %d не найден.", filmId);
+        log.error(error);
+        throw new NotFoundException(error);
     }
 
     @Override
@@ -140,7 +145,7 @@ public class FilmDbStorage implements FilmStorage {
                 + params.get("LEFT JOIN")
                 + "LEFT JOIN MPA ON F.MPA_ID = MPA.MPA_ID "
                 + " WHERE FD.director_id = ? "
-//                + "GROUP BY F.FILM_ID "
+                + "GROUP BY F.FILM_ID "
                 + params.get("ORDER BY") + ";";
         return jdbcTemplate.query(sqlQuery, rowMapper, directorId);
     }
@@ -148,9 +153,13 @@ public class FilmDbStorage implements FilmStorage {
     private Film updateFilmData(Film film) {
         if (film.getGenres() != null) {
             genreStorage.updateFilmToGenre(film);
+        } else {
+            genreStorage.deleteFilmToGenre(film);
         }
         if (film.getDirectors() != null) {
             directorStorage.updateFilmDirector(film);
+        } else {
+            directorStorage.deleteFilmDirector(film);
         }
         return get(film.getId());
     }
