@@ -46,8 +46,7 @@ public class ReviewDbStorage implements ReviewStorage {
         int rowNum = jdbcTemplate.update(sqlQuery, review.getContent(), review.getIsPositive(), review.getReviewId());
         String sqlQuerySelect = "SELECT * FROM reviews WHERE review_id = ?";
         try {
-            Review reviewUpdated = jdbcTemplate.queryForObject(sqlQuerySelect, this::mapRowToReview, review.getReviewId());
-            return reviewUpdated;
+            return jdbcTemplate.queryForObject(sqlQuerySelect, this::mapRowToReview, review.getReviewId());
         } catch (EmptyResultDataAccessException e) {
             throw new NotFoundException("Ревью не найдено");
         }
@@ -66,8 +65,7 @@ public class ReviewDbStorage implements ReviewStorage {
     public Review getReviewById(long id) {
         String sqlQuery = "SELECT * FROM reviews WHERE review_id = ?";
         try {
-            Review review = jdbcTemplate.queryForObject(sqlQuery, this::mapRowToReview, id);
-            return review;
+            return jdbcTemplate.queryForObject(sqlQuery, this::mapRowToReview, id);
         } catch (EmptyResultDataAccessException e) {
             throw new NotFoundException("Ревью не найдено");
         }
