@@ -3,7 +3,6 @@ package ru.yandex.practicum.filmorate.storage.ReviewDaoStorage;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.EmptyResultDataAccessException;
-import org.springframework.jdbc.core.DataClassRowMapper;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
@@ -35,7 +34,6 @@ public class ReviewDbStorage implements ReviewStorage {
             statement.setLong(4, review.getFilmId());
             return statement;
         }, keyHolder);
-        String sqlSelect = "SELECT * FROM reviews WHERE review_id = ?";
         return getReviewById(keyHolder.getKey().longValue());
     }
 
@@ -43,12 +41,13 @@ public class ReviewDbStorage implements ReviewStorage {
     public Review updateReview(Review review) {
         String sqlQuery = "UPDATE reviews SET content = ?, is_positive = ? WHERE review_id = ?";
 
-        int rowNum = jdbcTemplate.update(sqlQuery, review.getContent(), review.getIsPositive(), review.getReviewId());
-        String sqlQuerySelect = "SELECT * FROM reviews WHERE review_id = ?";
+        jdbcTemplate.update(sqlQuery, review.getContent(), review.getIsPositive(), review.getReviewId());
         try {
             return getReviewById(review.getReviewId());
         } catch (EmptyResultDataAccessException e) {
-            throw new NotFoundException("Ревью не найдено");
+            String error = String.format("Review with ID:%d not found", review.getReviewId());
+            log.error(error);
+            throw new NotFoundException(error);
         }
     }
 
@@ -57,7 +56,9 @@ public class ReviewDbStorage implements ReviewStorage {
         String sqlQuery = "DELETE FROM reviews WHERE review_id = ?";
         int rowsNum = jdbcTemplate.update(sqlQuery, id);
         if (rowsNum == 0) {
-            throw new NotFoundException("Отзыв не найден");
+            String error = String.format("Review with ID:%d not found", id);
+            log.error(error);
+            throw new NotFoundException(error);
         }
     }
 
@@ -67,7 +68,9 @@ public class ReviewDbStorage implements ReviewStorage {
         try {
             return jdbcTemplate.queryForObject(sqlQuery, this::mapRowToReview, id);
         } catch (EmptyResultDataAccessException e) {
-            throw new NotFoundException("Ревью не найдено");
+            String error = String.format("Review with ID:%d not found", id);
+            log.error(error);
+            throw new NotFoundException(error);
         }
     }
 
@@ -77,7 +80,9 @@ public class ReviewDbStorage implements ReviewStorage {
         try {
             return jdbcTemplate.query(sqlQuery, this::mapRowToReview, filmId, count);
         } catch (EmptyResultDataAccessException e) {
-            throw new NotFoundException("Ревью не найдено");
+            String error = String.format("Review for film with ID:%d not found", filmId);
+            log.error(error);
+            throw new NotFoundException(error);
         }
     }
 
@@ -85,7 +90,7 @@ public class ReviewDbStorage implements ReviewStorage {
     public List<Review> getAllReviews(int count) {
         String sqlQuery = "SELECT * FROM reviews ORDER BY useful DESC LIMIT ?";
         try {
-            return jdbcTemplate.query(sqlQuery, new DataClassRowMapper<>(Review.class), count);
+            return jdbcTemplate.query(sqlQuery, this::mapRowToReview, count);
         } catch (EmptyResultDataAccessException e) {
             throw new NotFoundException("Ревью не найдено");
         }
@@ -96,7 +101,9 @@ public class ReviewDbStorage implements ReviewStorage {
         String sqlQuery = "UPDATE reviews SET useful = useful+1 WHERE review_id = ?";
         int rowsNum = jdbcTemplate.update(sqlQuery, reviewId);
         if (rowsNum == 0) {
-            throw new NotFoundException("Ревью не найдено");
+            String error = String.format("Review with ID:%d not found", reviewId);
+            log.error(error);
+            throw new NotFoundException(error);
         }
     }
 
@@ -105,7 +112,9 @@ public class ReviewDbStorage implements ReviewStorage {
         String sqlQuery = "UPDATE reviews SET useful = useful-1 WHERE review_id = ?";
         int rowsNum = jdbcTemplate.update(sqlQuery, reviewId);
         if (rowsNum == 0) {
-            throw new NotFoundException("Ревью не найдено");
+            String error = String.format("Review with ID:%d not found", reviewId);
+            log.error(error);
+            throw new NotFoundException(error);
         }
     }
 

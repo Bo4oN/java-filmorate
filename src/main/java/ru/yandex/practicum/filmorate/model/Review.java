@@ -9,14 +9,14 @@ import javax.validation.constraints.NotNull;
 @Data
 @AllArgsConstructor
 public class Review {
-    private long reviewId;
+    private final long reviewId;
     @NotBlank
     private String content;
     @NotNull
     private Boolean isPositive;
     @NotNull
-    private Integer userId;
+    private final Integer userId;
     @NotNull
-    private Integer filmId;
+    private final Integer filmId;
     private int useful;
 }
