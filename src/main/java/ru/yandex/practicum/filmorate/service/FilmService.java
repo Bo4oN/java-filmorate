@@ -2,7 +2,9 @@ package ru.yandex.practicum.filmorate.service;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.stereotype.Service;
+import ru.yandex.practicum.filmorate.exceptions.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.exceptions.ValidationException;
 import ru.yandex.practicum.filmorate.storage.FilmDaoStorage.FilmStorage;
@@ -55,6 +57,14 @@ public class FilmService {
         if (film.getReleaseDate().isBefore(BIRTHDAY_MOVIE)) {
             log.debug("Не валидная дата премьеры.");
             throw new ValidationException("Дата премьеры фильма не может быть раньше 28 декабря 1985г.");
+        }
+    }
+
+    public List<Film> getCommonTopFilm(int userId, int friendId) {
+        try {
+            return storage.getCommonTopFilm(userId, friendId);
+        } catch (EmptyResultDataAccessException e) {
+            throw new NotFoundException("Одного из пользователей нет в базе");
         }
     }
 }
