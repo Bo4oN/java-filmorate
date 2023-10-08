@@ -116,7 +116,6 @@ public class UserDbStorage implements UserStorage {
         return get(secondId);
     }
 
-
     @Override
     public List<User> getFriendsList(int id) {
         get(id);
