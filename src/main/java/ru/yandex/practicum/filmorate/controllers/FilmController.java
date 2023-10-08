@@ -74,7 +74,7 @@ public class FilmController {
      * @param year    год релиза (только положительное число)
      * @return список самых популярных фильмов
      */
-    @GetMapping({"/popular?count={count}&genreId={genreId}&year={year}", "/popular"})
+    @GetMapping("/popular")
     @Validated
     public List<Film> getTopFilm(
             @Positive @RequestParam(defaultValue = "10") Integer count,
