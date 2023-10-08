@@ -36,15 +36,23 @@ import static org.springframework.test.context.jdbc.Sql.ExecutionPhase.AFTER_TES
 @TestPropertySource("/application-test.properties")
 @EnableAutoConfiguration(exclude = {BatchAutoConfiguration.class})
 @Sql(value = {
-        "/sql/films/create-films-after.sql"
+        "/sql/directors/create-directors-after.sql",
+        "/sql/films/create-films-after.sql",
+        "/sql/users/create-users-after.sql",
+        "/sql/genres/create-film-genres-after.sql",
+        "/sql/genres/create-genres-after.sql"
 }, executionPhase = AFTER_TEST_METHOD)
 class FilmServiceTest {
     private final DataSource dataSource = new EmbeddedDatabaseBuilder()
             .setType(EmbeddedDatabaseType.H2)
             .addScript("classpath:/sql/create-directors-schema.sql")
             .addScript("classpath:/sql/create-films-schema.sql")
+            .addScript("classpath:/sql/create-users-schema.sql")
             .addScript("classpath:/sql/directors/create-directors-before.sql")
             .addScript("classpath:/sql/films/create-films-before.sql")
+            .addScript("classpath:/sql/users/create-users-before.sql")
+            .addScript("classpath:/sql/genres/create-genres-before.sql")
+            .addScript("classpath:/sql/genres/create-film-genres-before.sql")
             .build();
     private final JdbcTemplate jdbc = new JdbcTemplate(dataSource);
     private final RowMapper<Genre> genreRowMapper = new GenreRowMapper();
@@ -82,5 +90,19 @@ class FilmServiceTest {
         List<Film> directorFilms = service.getDirectorFilms(director.getId(), "year");
         assertEquals("Lolita", directorFilms.get(0).getName());
         assertEquals("Eyes Wide Shut", directorFilms.get(7).getName());
+    }
+
+    @Test
+    void getTopFilmsByGenresAndYear() {
+        List<Film> topTenFilmsByGenresAndYear = service.getTopFilms(10, 2, 1980);
+        assertEquals(2, topTenFilmsByGenresAndYear.size());
+        assertEquals("Raging Bull", topTenFilmsByGenresAndYear.get(0).getName());
+        assertEquals("The Shining", topTenFilmsByGenresAndYear.get(1).getName());
+    }
+
+    @Test
+    void getTopFilms() {
+        List<Film> topTenFilms = service.getTopFilms(10, 0, 0);
+        assertEquals(9,topTenFilms.size());
     }
 }

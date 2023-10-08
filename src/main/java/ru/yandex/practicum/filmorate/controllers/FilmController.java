@@ -2,6 +2,7 @@ package ru.yandex.practicum.filmorate.controllers;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.model.Entity;
 import ru.yandex.practicum.filmorate.model.Film;
@@ -9,6 +10,7 @@ import ru.yandex.practicum.filmorate.service.FilmService;
 import ru.yandex.practicum.filmorate.service.UserService;
 
 import javax.validation.Valid;
+import javax.validation.constraints.Positive;
 import java.util.List;
 
 @Slf4j
@@ -64,25 +66,29 @@ public class FilmController {
         return filmService.getFilm(Integer.parseInt(id));
     }
 
-    @ResponseBody
-    @GetMapping("/popular")
-    public List<Film> getTopTenFilm(@RequestParam(defaultValue = "10") String count) {
-        log.info("Запрос на получение {} самых популярных фильмов.", count);
-        return filmService.getTopFilms(Integer.parseInt(count));
-    }
+    /**
+     * Возвращает список самых популярных фильмов указанного жанра за нужный год.
 
-    @ResponseBody
-    @GetMapping("/popular/{count}")
-    public List<Film> getTopFilm(@PathVariable String count) {
-        log.info("Запрос на получение {} самых популярных фильмов.", count);
-        return filmService.getTopFilms(Integer.parseInt(count));
+     * @param count   Лимит фильмов (по умолчанию 10)
+     * @param genreId идентификатор жанра (только положительное число)
+     * @param year    год релиза (только положительное число)
+     * @return список самых популярных фильмов
+     */
+    @GetMapping({"/popular?count={count}&genreId={genreId}&year={year}", "/popular"})
+    @Validated
+    public List<Film> getTopFilm(
+            @Positive @RequestParam(defaultValue = "10") Integer count,
+            @Positive @RequestParam(required = false) Integer genreId,
+            @RequestParam(required = false) Integer year) {
+
+        return filmService.getTopFilms(count, genreId, year);
     }
 
     /**
      * Возвращает список фильмов режиссера
      * отсортированных по количеству лайков или году выпуска.
      *
-     * @param sortBy sortBy=[year,likes]
+     * @param sortBy sortBy=[year,likes,none]
      * @return список фильмов режиссера
      */
     @RequestMapping("/director/{directorId}")
