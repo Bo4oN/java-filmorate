@@ -102,7 +102,7 @@ class FilmServiceTest {
 
     @Test
     void getTopFilms() {
-        List<Film> topTenFilms = service.getTopFilms(10, 0, 0);
+        List<Film> topTenFilms = service.getTopFilms(10, null, null);
         assertEquals(9,topTenFilms.size());
     }
 }
