@@ -15,8 +15,8 @@ import java.util.List;
 @Slf4j
 @Service
 public class FilmService {
-    private final FilmStorage storage;
     private static final LocalDate BIRTHDAY_MOVIE = LocalDate.of(1895, 12, 28);
+    private final FilmStorage storage;
 
     @Autowired
     public FilmService(FilmStorage storage) {
@@ -53,8 +53,13 @@ public class FilmService {
         storage.deleteLike(filmId, userId);
     }
 
-    public List<Film> getTopFilms(int count) {
-        return storage.getTopFilms(count);
+    public List<Film> getTopFilms(Integer count, Integer genreId, Integer year) {
+        log.info("[i] Incoming params in getTopFilms(count, genreId, year):\n"
+                + " Count{}\n"
+                + " GenreId:{}\n"
+                + " Year:{}", genreId, year, count);
+
+        return storage.getTopFilms(count, genreId, year);
     }
 
     public List<Film> getDirectorFilms(int directorId, String sortBy) {
