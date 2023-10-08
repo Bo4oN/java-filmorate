@@ -55,9 +55,9 @@ public class FilmService {
 
     public List<Film> getTopFilms(Integer count, Integer genreId, Integer year) {
         log.info("[i] Incoming params in getTopFilms(count, genreId, year):\n"
-                + " Count{}\n"
+                + " Count:{}\n"
                 + " GenreId:{}\n"
-                + " Year:{}", genreId, year, count);
+                + " Year:{}", count, genreId, year);
 
         return storage.getTopFilms(count, genreId, year);
     }
