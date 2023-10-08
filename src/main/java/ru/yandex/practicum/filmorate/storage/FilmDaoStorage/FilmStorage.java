@@ -12,7 +12,7 @@ public interface FilmStorage {
 
     Film get(int id);
 
-    String deleteFilm(int id);
+    void deleteFilm(int id);
 
     List<Film> getAll();
 

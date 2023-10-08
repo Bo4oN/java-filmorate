@@ -9,7 +9,7 @@ public interface UserStorage {
 
     User update(User user);
 
-    String delete(int id);
+    void delete(int id);
 
     User get(int id);
 

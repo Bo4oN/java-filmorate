@@ -84,14 +84,14 @@ public class FilmDbStorage implements FilmStorage {
     }
 
     @Override
-    public String deleteFilm(int id) {
+    public void deleteFilm(int id) {
         String sqlQuery = "DELETE FROM FILMS " +
                 "WHERE film_id = " + id;
         int row = jdbcTemplate.update(sqlQuery);
         if (row == 0) {
             throw new NotFoundException("Фильма с ID - " + id + " нет в базе.");
         }
-        return "Фильм с id:" + id + " успешно удален.";
+        log.info("Фильм с id:" + id + " успешно удален.");
     }
 
     @Override
@@ -119,8 +119,6 @@ public class FilmDbStorage implements FilmStorage {
             return film;
         }
     }
-
-    ;
 
     @Override
     public void addLike(int filmId, int userId) {

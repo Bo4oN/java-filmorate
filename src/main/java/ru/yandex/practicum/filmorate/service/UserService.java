@@ -33,8 +33,8 @@ public class UserService {
         return userStorage.get(id);
     }
 
-    public String deleteUser(int id) {
-        return userStorage.delete(id);
+    public void deleteUser(int id) {
+        userStorage.delete(id);
     }
 
     public List<User> getUsers() {

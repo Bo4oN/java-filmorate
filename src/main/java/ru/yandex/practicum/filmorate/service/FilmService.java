@@ -35,8 +35,8 @@ public class FilmService {
         return storage.get(id);
     }
 
-    public String deleteFilm(int id) {
-        return storage.deleteFilm(id);
+    public void deleteFilm(int id) {
+        storage.deleteFilm(id);
     }
 
     public List<Film> getAllFilms() {
