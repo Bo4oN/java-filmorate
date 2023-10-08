@@ -140,12 +140,51 @@ public class FilmDbStorage implements FilmStorage {
     @Override
     public List<Film> searchFilms(String query, String by) {
         String sqlQuery;
-        if (by.contains("title")) {
-            sqlQuery = "SELECT * FROM FILMS WHERE NAME LIKE '% ? %'";
+        if (by.contains("title") && by.contains("director")) {
+            sqlQuery = "SELECT FILMS.FILM_ID, FILMS.NAME, DESCRIPTION, DURATION, RELEASE_DATE," +
+                    "MPA.MPA_ID, MPA.NAME, COUNT(LIKE_ID) as films_like " +
+                    "FROM FILMS " +
+                    "LEFT JOIN LIKES ON FILMS.FILM_ID = LIKES.FILM_ID " +
+                    "LEFT JOIN MPA ON FILMS.MPA_ID = MPA.MPA_ID " +
+                    "WHERE FILMS.NAME LIKE '% ? %' " +
+                    "GROUP BY FILMS.FILM_ID, FILMS.NAME, DESCRIPTION, DURATION, RELEASE_DATE, " +
+                    "MPA.MPA_ID, MPA.NAME " +
+                    "UNION " +
+                    "(SELECT FILMS.FILM_ID, FILMS.NAME, DESCRIPTION, DURATION, RELEASE_DATE, " +
+                    "MPA.MPA_ID, MPA.NAME, COUNT(LIKE_ID) as films_like " +
+                    "FROM FILMS " +
+                    "LEFT JOIN LIKES ON FILMS.FILM_ID = LIKES.FILM_ID " +
+                    "LEFT JOIN MPA ON FILMS.MPA_ID = MPA.MPA_ID " +
+                    "WHERE FILMS.FILM_ID IN (SELECT FILMS_DIRECTOR.film_id " +
+                    "FROM FILMS_DIRECTOR " +
+                    "LEFT JOIN DIRECTORS ON DIRECTOR_ID = ID " +
+                    "WHERE NAME LIKE '% ? %')" +
+                    "GROUP BY FILMS.FILM_ID, FILMS.NAME, DESCRIPTION, DURATION, RELEASE_DATE, " +
+                    "MPA.MPA_ID, MPA.NAME) " +
+                    "ORDER BY films_like DESC";
+        } else if (by.contains("title")) {
+            sqlQuery = "SELECT FILMS.FILM_ID, FILMS.NAME, DESCRIPTION, DURATION, RELEASE_DATE," +
+                    "MPA.MPA_ID, MPA.NAME, COUNT(LIKE_ID) as films_like " +
+                    "FROM FILMS " +
+                    "LEFT JOIN LIKES ON FILMS.FILM_ID = LIKES.FILM_ID " +
+                    "LEFT JOIN MPA ON FILMS.MPA_ID = MPA.MPA_ID " +
+                    "WHERE FILMS.NAME LIKE '% ? %' " +
+                    "GROUP BY FILMS.FILM_ID, FILMS.NAME, DESCRIPTION, DURATION, RELEASE_DATE, " +
+                    "MPA.MPA_ID, MPA.NAME " +
+                    "ORDER BY films_like DESC";
         } else if (by.contains("director")) {
-            sqlQuery = "SELECT * FROM FILMS WHERE FILM_ID IN (SELECT FILM_ID FROM )";
-        } else if (by.contains("title") && by.contains("director")) {
-            sqlQuery = "";
+            sqlQuery = "SELECT FILMS.FILM_ID, FILMS.NAME, DESCRIPTION, DURATION, RELEASE_DATE," +
+                    "MPA.MPA_ID, MPA.NAME, COUNT(LIKE_ID) as films_like " +
+                    "FROM FILMS " +
+                    "LEFT JOIN LIKES ON FILMS.FILM_ID = LIKES.FILM_ID " +
+                    "LEFT JOIN MPA ON FILMS.MPA_ID = MPA.MPA_ID " +
+                    "WHERE FILMS.FILM_ID IN (SELECT FILMS_DIRECTOR.film_id " +
+                    "FROM FILMS_DIRECTOR " +
+                    "LEFT JOIN DIRECTORS ON DIRECTOR_ID = ID " +
+                    "WHERE NAME LIKE '% ? %') " +
+                    "GROUP BY FILMS.FILM_ID, FILMS.NAME, DESCRIPTION, DURATION, RELEASE_DATE, " +
+                    "MPA.MPA_ID, MPA.NAME " +
+                    "ORDER BY films_like DESC";
         } else {
             throw new NotFoundException("Параметр поиска задан не корректно - " + by);
         }
