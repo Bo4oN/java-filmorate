@@ -36,7 +36,8 @@ import static org.springframework.test.context.jdbc.Sql.ExecutionPhase.AFTER_TES
 @RunWith(SpringRunner.class)
 @SpringBootTest
 @TestPropertySource("/application-test.properties")
-@EnableAutoConfiguration(exclude = {BatchAutoConfiguration.class})@Sql(value = {
+@EnableAutoConfiguration(exclude = {BatchAutoConfiguration.class})
+@Sql(value = {
         "/sql/directors/create-directors-after.sql",
         "/sql/films/create-films-after.sql",
         "/sql/users/create-users-after.sql",
@@ -105,4 +106,16 @@ class FilmServiceTest {
         assertEquals("Eyes Wide Shut", directorFilms.get(7).getName());
     }
 
+    void getTopFilmsByGenresAndYear() {
+        List<Film> topTenFilmsByGenresAndYear = service.getTopFilms(10, 2, 1980);
+        assertEquals(2, topTenFilmsByGenresAndYear.size());
+        assertEquals("Raging Bull", topTenFilmsByGenresAndYear.get(0).getName());
+        assertEquals("The Shining", topTenFilmsByGenresAndYear.get(1).getName());
+    }
+
+    @Test
+    void getTopFilms() {
+        List<Film> topTenFilms = service.getTopFilms(10, null, null);
+        assertEquals(9,topTenFilms.size());
+    }
 }

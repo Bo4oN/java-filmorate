@@ -41,4 +41,24 @@ Template repository for Filmorate project.
 "name": "New director"
 }
 ```
+
 **DELETE /directors/{id}** - Удаление режиссёра
+
+## add-most-populars
+
+### Описание задачи
+
+Добавить возможность выводить топ-N фильмов по количеству лайков.<br/>
+
+Фильтрация должна быть по двум параметрам:
+* По жанру.
+* За указанный год.
+* 
+### API
+
+**GET /films/popular?count={limit}&genreId={genreId}&year={year}**
+
+Возвращает список самых популярных фильмов указанного жанра за нужный год.
+
+**DELETE /directors/{id}** - Удаление режиссёра
+
