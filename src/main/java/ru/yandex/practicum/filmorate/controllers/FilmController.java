@@ -83,11 +83,11 @@ public class FilmController {
     @ResponseBody
     @GetMapping("/common")
     public List<Film> getCommonTopFilm(
-            @RequestParam(name = "userId") String userId,
-            @RequestParam(name = "friendId") String friendId
+            @RequestParam(name = "userId") int userId,
+            @RequestParam(name = "friendId") int friendId
     ) {
         log.info("Запрос на получение общих фильмов пользователей {} и {} с сортировкой по популярности",
                 userId, friendId);
-        return filmService.getCommonTopFilm(Integer.parseInt(userId), Integer.parseInt(friendId));
+        return filmService.getCommonTopFilm(userId, friendId);
     }
 }

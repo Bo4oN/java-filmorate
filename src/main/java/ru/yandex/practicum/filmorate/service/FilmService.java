@@ -8,6 +8,7 @@ import ru.yandex.practicum.filmorate.exceptions.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.exceptions.ValidationException;
 import ru.yandex.practicum.filmorate.storage.FilmDaoStorage.FilmStorage;
+import ru.yandex.practicum.filmorate.storage.UserDaoStorage.UserStorage;
 
 import java.time.LocalDate;
 import java.util.*;
@@ -16,11 +17,13 @@ import java.util.*;
 @Service
 public class FilmService {
     private final FilmStorage storage;
+    private final UserStorage userStorage;
     private static final LocalDate BIRTHDAY_MOVIE = LocalDate.of(1895, 12, 28);
 
     @Autowired
-    public FilmService(FilmStorage storage) {
+    public FilmService(FilmStorage storage, UserStorage userStorage) {
         this.storage = storage;
+        this.userStorage = userStorage;
     }
 
     public Film addFilm(Film film) {
@@ -61,10 +64,12 @@ public class FilmService {
     }
 
     public List<Film> getCommonTopFilm(int userId, int friendId) {
-        try {
-            return storage.getCommonTopFilm(userId, friendId);
-        } catch (EmptyResultDataAccessException e) {
-            throw new NotFoundException("Одного из пользователей нет в базе");
+        if (userId == friendId) {
+            log.error("Указан один и тот же идентификатор");
+            throw new RuntimeException("Указан один и тот же идентификатор");
         }
+        userStorage.get(userId);
+        userStorage.get(friendId);
+        return storage.getCommonTopFilm(userId, friendId);
     }
 }
