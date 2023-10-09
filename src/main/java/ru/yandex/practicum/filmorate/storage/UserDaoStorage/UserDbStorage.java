@@ -207,7 +207,6 @@ public class UserDbStorage implements UserStorage {
             return film;
         }
     }
-}
 
     public List<Event> getUserFeed(int id) {
         return feedStorage.getUserFeed(id);
