@@ -9,11 +9,9 @@ import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
 import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.exceptions.NotFoundException;
-import ru.yandex.practicum.filmorate.model.Film;
-import ru.yandex.practicum.filmorate.model.Genre;
-import ru.yandex.practicum.filmorate.model.Mpa;
-import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.model.*;
 import ru.yandex.practicum.filmorate.storage.GenreDaoStorage.GenreStorage;
+import ru.yandex.practicum.filmorate.storage.FeedDBStorage.FeedStorage;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -28,6 +26,7 @@ public class UserDbStorage implements UserStorage {
 
     private final JdbcTemplate jdbcTemplate;
     private final GenreStorage genreStorage;
+    private final FeedStorage feedStorage;
 
     @Override
     public User add(User data) {
@@ -112,6 +111,7 @@ public class UserDbStorage implements UserStorage {
         }
         String sqlQuery = "INSERT INTO friends (USER1_ID, USER2_ID) VALUES ( ?, ? );";
         jdbcTemplate.update(sqlQuery, firstId, secondId);
+        feedStorage.addFriendEvent(firstId, secondId);
         log.info("Пользователи с ID - " + firstId + " и ID - " + secondId + " теперь друзья.");
         return get(secondId);
     }
@@ -120,6 +120,7 @@ public class UserDbStorage implements UserStorage {
     public User deleteFriend(int firstId, int secondId) {
         String sqlQuery = "DELETE FROM friends WHERE user1_id = ? AND user2_id = ?;";
         jdbcTemplate.update(sqlQuery, firstId, secondId);
+        feedStorage.deleteFriendEvent(firstId, secondId);
         log.info("Пользователи с ID - " + firstId + " и ID - " + secondId + " больше не друзья.");
         return get(secondId);
     }
@@ -208,3 +209,7 @@ public class UserDbStorage implements UserStorage {
     }
 }
 
+    public List<Event> getUserFeed(int id) {
+        return feedStorage.getUserFeed(id);
+    }
+}
