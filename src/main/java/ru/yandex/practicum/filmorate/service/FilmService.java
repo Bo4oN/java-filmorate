@@ -35,6 +35,10 @@ public class FilmService {
         return storage.get(id);
     }
 
+    public void deleteFilm(int id) {
+        storage.deleteFilm(id);
+    }
+
     public List<Film> getAllFilms() {
         return storage.getAll();
     }
@@ -54,7 +58,7 @@ public class FilmService {
     private void validationFilm(Film film) {
         if (film.getReleaseDate().isBefore(BIRTHDAY_MOVIE)) {
             log.debug("Не валидная дата премьеры.");
-            throw new ValidationException("Дата премьеры фильма не может быть раньше 28 декабря 1985г.");
+            throw new ValidationException("Дата премьеры фильма не может быть раньше 28 декабря 1895г.");
         }
     }
 }
