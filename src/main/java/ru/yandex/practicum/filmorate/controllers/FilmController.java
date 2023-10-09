@@ -10,7 +10,9 @@ import ru.yandex.practicum.filmorate.service.FilmService;
 import ru.yandex.practicum.filmorate.service.UserService;
 
 import javax.validation.Valid;
+
 import javax.validation.constraints.Positive;
+
 import java.util.List;
 
 @Slf4j
@@ -102,5 +104,30 @@ public class FilmController {
     @GetMapping
     public List<Film> getDirectorFilms(@PathVariable int directorId, @RequestParam(name = "sortBy", defaultValue = "none") String sortBy) {
         return filmService.getDirectorFilms(directorId, sortBy.toUpperCase());
+    }
+
+
+    @ResponseBody
+    @GetMapping("/common")
+    public List<Film> getCommonTopFilm(
+            @RequestParam(name = "userId") int userId,
+            @RequestParam(name = "friendId") int friendId
+    ) {
+        log.info("Запрос на получение общих фильмов пользователей {} и {} с сортировкой по популярности",
+                userId, friendId);
+        return filmService.getCommonTopFilm(userId, friendId);
+
+    /**
+     * Возвращает список фильмов режиссера
+     * отсортированных по количеству лайков или году выпуска.
+     *
+     * @param sortBy sortBy=[year,likes]
+     * @return список фильмов режиссера
+     */
+    @RequestMapping("/director/{directorId}")
+    @GetMapping
+    public List<Film> getDirectorFilms(@PathVariable int directorId, @RequestParam(name = "sortBy", defaultValue = "none") String sortBy) {
+        return filmService.getDirectorFilms(directorId, sortBy.toUpperCase());
+
     }
 }

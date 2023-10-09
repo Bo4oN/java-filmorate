@@ -22,6 +22,7 @@ public class FilmRowMapper implements RowMapper<Film> {
 
     @Override
     public Film mapRow(ResultSet rs, int rowNum) throws SQLException {
+
         Film film = new Film(rs.getInt("film_id"),
                 rs.getString("fn"),
                 rs.getString("description"),

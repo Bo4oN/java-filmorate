@@ -12,6 +12,7 @@ import ru.yandex.practicum.filmorate.exceptions.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.FilmSortBy;
 import ru.yandex.practicum.filmorate.model.Genre;
+import ru.yandex.practicum.filmorate.storage.DirectorDaoStorage.DirectorStorage;
 import ru.yandex.practicum.filmorate.model.Mpa;
 import ru.yandex.practicum.filmorate.storage.DirectorDaoStorage.DirectorStorage;
 import ru.yandex.practicum.filmorate.storage.FeedDBStorage.FeedStorage;
@@ -197,6 +198,74 @@ public class FilmDbStorage implements FilmStorage {
             }
             return jdbcTemplate.query(sqlQuery, rowMapper, genreId, count);
         }
+    }
+
+    private Film updateFilmData(Film film) {
+        if (film.getGenres() != null) {
+            genreStorage.updateFilmToGenre(film);
+        } else {
+            genreStorage.deleteFilmToGenre(film);
+        }
+        if (film.getDirectors() != null) {
+            directorStorage.updateFilmDirector(film);
+        } else {
+            directorStorage.deleteFilmDirector(film);
+        }
+        return get(film.getId());
+    }
+
+
+    @Override
+    public List<Film> getCommonTopFilm(int userId, int friendId) {
+        String sql = "SELECT " +
+                "f.FILM_ID, " +
+                "f.NAME AS FN, " +
+                "f.DESCRIPTION, " +
+                "f.DURATION, " +
+                "f.RELEASE_DATE, " +
+                "m.MPA_ID, " +
+                "m.NAME AS MN, " +
+                "COUNT(l.LIKE_ID) AS film_likes " +
+                "FROM " +
+                "FILMS f " +
+                "LEFT JOIN LIKES l ON f.FILM_ID = l.FILM_ID " +
+                "LEFT JOIN MPA m ON f.MPA_ID = m.MPA_ID " +
+                "WHERE " +
+                "l.USER_ID = ? " +
+                "AND f.FILM_ID IN (SELECT film_id FROM likes WHERE user_id = ?) " +
+                "GROUP BY " +
+                "f.FILM_ID, FN, f.DESCRIPTION, f.DURATION, f.RELEASE_DATE, m.MPA_ID, MN " +
+                "ORDER BY " +
+                "film_likes DESC; ";
+
+        return jdbcTemplate.query(sql, new FilmMapper(), userId, friendId);
+
+    /**
+     * Возвращает список фильмов режиссера
+     * отсортированных по количеству лайков или году выпуска.
+     *
+     * @param filmSortBy filmSortBy=[year,likes]
+     * @return список фильмов режиссера
+     */
+    @Override
+    public List<Film> getFilmDirector(int directorId, FilmSortBy filmSortBy) {
+        Map<String, String> params = filmSortBy.getParams();
+        String sqlQuery = "SELECT F.film_id,"
+                + " F.name FN,"
+                + " F.description,"
+                + " F.duration,"
+                + " F.release_date,"
+                + " MPA.mpa_id,"
+                + " MPA.name MN,"
+                + params.get("SELECT")
+                + "FROM FILMS_DIRECTOR FD "
+                + "LEFT JOIN FILMS F ON FD.film_id = F.film_id "
+                + params.get("LEFT JOIN")
+                + "LEFT JOIN MPA ON F.MPA_ID = MPA.MPA_ID "
+                + " WHERE FD.director_id = ? "
+                + "GROUP BY F.FILM_ID "
+                + params.get("ORDER BY") + ";";
+        return jdbcTemplate.query(sqlQuery, rowMapper, directorId);
     }
 
     private Film updateFilmData(Film film) {
