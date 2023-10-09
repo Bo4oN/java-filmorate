@@ -141,8 +141,8 @@ public class FilmDbStorage implements FilmStorage {
     public List<Film> searchFilms(String query, String by) {
         String sqlQuery;
         if (by.contains("title") && by.contains("director")) {
-            sqlQuery = "SELECT FILMS.FILM_ID, FILMS.NAME, DESCRIPTION, DURATION, RELEASE_DATE," +
-                    "MPA.MPA_ID, MPA.NAME, COUNT(LIKE_ID) as films_like " +
+            sqlQuery = "SELECT FILMS.FILM_ID, FILMS.NAME AS FN, DESCRIPTION, DURATION, RELEASE_DATE," +
+                    "MPA.MPA_ID, MPA.NAME AS MN, COUNT(LIKE_ID) as films_like " +
                     "FROM FILMS " +
                     "LEFT JOIN LIKES ON FILMS.FILM_ID = LIKES.FILM_ID " +
                     "LEFT JOIN MPA ON FILMS.MPA_ID = MPA.MPA_ID " +
@@ -150,8 +150,8 @@ public class FilmDbStorage implements FilmStorage {
                     "GROUP BY FILMS.FILM_ID, FILMS.NAME, DESCRIPTION, DURATION, RELEASE_DATE, " +
                     "MPA.MPA_ID, MPA.NAME " +
                     "UNION " +
-                    "(SELECT FILMS.FILM_ID, FILMS.NAME, DESCRIPTION, DURATION, RELEASE_DATE, " +
-                    "MPA.MPA_ID, MPA.NAME, COUNT(LIKE_ID) as films_like " +
+                    "(SELECT FILMS.FILM_ID, FILMS.NAME AS FN, DESCRIPTION, DURATION, RELEASE_DATE, " +
+                    "MPA.MPA_ID, MPA.NAME AS MN, COUNT(LIKE_ID) as films_like " +
                     "FROM FILMS " +
                     "LEFT JOIN LIKES ON FILMS.FILM_ID = LIKES.FILM_ID " +
                     "LEFT JOIN MPA ON FILMS.MPA_ID = MPA.MPA_ID " +
@@ -163,8 +163,8 @@ public class FilmDbStorage implements FilmStorage {
                     "MPA.MPA_ID, MPA.NAME) " +
                     "ORDER BY films_like DESC";
         } else if (by.contains("title")) {
-            sqlQuery = "SELECT FILMS.FILM_ID, FILMS.NAME, DESCRIPTION, DURATION, RELEASE_DATE," +
-                    "MPA.MPA_ID, MPA.NAME, COUNT(LIKE_ID) as films_like " +
+            sqlQuery = "SELECT FILMS.FILM_ID, FILMS.NAME AS FN, DESCRIPTION, DURATION, RELEASE_DATE," +
+                    "MPA.MPA_ID, MPA.NAME AS MN, COUNT(LIKE_ID) as films_like " +
                     "FROM FILMS " +
                     "LEFT JOIN LIKES ON FILMS.FILM_ID = LIKES.FILM_ID " +
                     "LEFT JOIN MPA ON FILMS.MPA_ID = MPA.MPA_ID " +
@@ -173,8 +173,8 @@ public class FilmDbStorage implements FilmStorage {
                     "MPA.MPA_ID, MPA.NAME " +
                     "ORDER BY films_like DESC";
         } else if (by.contains("director")) {
-            sqlQuery = "SELECT FILMS.FILM_ID, FILMS.NAME, DESCRIPTION, DURATION, RELEASE_DATE," +
-                    "MPA.MPA_ID, MPA.NAME, COUNT(LIKE_ID) as films_like " +
+            sqlQuery = "SELECT FILMS.FILM_ID, FILMS.NAME AS FN, DESCRIPTION, DURATION, RELEASE_DATE," +
+                    "MPA.MPA_ID, MPA.NAME AS MN, COUNT(LIKE_ID) as films_like " +
                     "FROM FILMS " +
                     "LEFT JOIN LIKES ON FILMS.FILM_ID = LIKES.FILM_ID " +
                     "LEFT JOIN MPA ON FILMS.MPA_ID = MPA.MPA_ID " +
