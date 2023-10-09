@@ -26,6 +26,6 @@ public interface UserStorage {
     List<User> getCommonFriends(int firstId, int secondId);
 
     List<Film> getRecommendations(int id);
-  
+
     List<Event> getUserFeed(int id);
 }
