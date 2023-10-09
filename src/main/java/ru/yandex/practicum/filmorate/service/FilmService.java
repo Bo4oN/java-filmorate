@@ -3,12 +3,14 @@ package ru.yandex.practicum.filmorate.service;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.exceptions.NotFoundException;
 import ru.yandex.practicum.filmorate.exceptions.ValidationException;
+import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.FilmSortBy;
 import ru.yandex.practicum.filmorate.storage.FilmDaoStorage.FilmStorage;
 
 import java.time.LocalDate;
-import java.util.*;
+import java.util.List;
 
 @Slf4j
 @Service
@@ -53,6 +55,22 @@ public class FilmService {
 
     public List<Film> getTopFilms(int count) {
         return storage.getTopFilms(count);
+    }
+
+    public List<Film> getDirectorFilms(int directorId, String sortBy) {
+        List<Film> directorFilms = storage.getFilmDirector(
+                directorId,
+                FilmSortBy.valueOf(sortBy.toUpperCase())
+        );
+
+        if (directorFilms.isEmpty()) {
+            String error = String.format("Director with ID:%d not found", directorId);
+            log.error(error);
+            throw new NotFoundException(error);
+        }
+
+        log.info("Director Films\n{}", directorFilms);
+        return directorFilms;
     }
 
     private void validationFilm(Film film) {
