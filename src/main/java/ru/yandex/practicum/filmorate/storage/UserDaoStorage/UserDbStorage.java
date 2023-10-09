@@ -58,9 +58,14 @@ public class UserDbStorage implements UserStorage {
     }
 
     @Override
-    public User delete(int id) {
-        String sqlQuery = "DELETE FROM users where user_id=?;";
-        return  jdbcTemplate.queryForObject(sqlQuery, new UserMapper(), id);
+    public void delete(int id) {
+        String sqlQuery = "DELETE FROM users " +
+                "WHERE user_id = " + id;
+        int row = jdbcTemplate.update(sqlQuery);
+        if (row == 0) {
+            throw new NotFoundException("Пользователь не найден.");
+        }
+        log.info("Пользователь с id:" + id + " успешно удален.");
     }
 
     @Override
@@ -116,9 +121,9 @@ public class UserDbStorage implements UserStorage {
         return get(secondId);
     }
 
-
     @Override
     public List<User> getFriendsList(int id) {
+        get(id);
         String sqlQuery = "SELECT user_id, name, login, email, birthday" +
                 " FROM users WHERE USER_ID" +
                 " IN (SELECT USER2_ID FROM friends WHERE USER1_ID = ?);";
