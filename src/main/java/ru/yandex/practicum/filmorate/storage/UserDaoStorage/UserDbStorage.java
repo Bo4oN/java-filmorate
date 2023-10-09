@@ -9,7 +9,9 @@ import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
 import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.exceptions.NotFoundException;
+import ru.yandex.practicum.filmorate.model.Event;
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.storage.FeedDBStorage.FeedStorage;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -21,6 +23,7 @@ import java.util.List;
 public class UserDbStorage implements UserStorage {
 
     private final JdbcTemplate jdbcTemplate;
+    private final FeedStorage feedStorage;
 
     @Override
     public User add(User data) {
@@ -55,9 +58,14 @@ public class UserDbStorage implements UserStorage {
     }
 
     @Override
-    public User delete(int id) {
-        String sqlQuery = "DELETE FROM users where user_id=?;";
-        return  jdbcTemplate.queryForObject(sqlQuery, new UserMapper(), id);
+    public void delete(int id) {
+        String sqlQuery = "DELETE FROM users " +
+                "WHERE user_id = " + id;
+        int row = jdbcTemplate.update(sqlQuery);
+        if (row == 0) {
+            throw new NotFoundException("Пользователь не найден.");
+        }
+        log.info("Пользователь с id:" + id + " успешно удален.");
     }
 
     @Override
@@ -99,6 +107,7 @@ public class UserDbStorage implements UserStorage {
         }
         String sqlQuery = "INSERT INTO friends (USER1_ID, USER2_ID) VALUES ( ?, ? );";
         jdbcTemplate.update(sqlQuery, firstId, secondId);
+        feedStorage.addFriendEvent(firstId, secondId);
         log.info("Пользователи с ID - " + firstId + " и ID - " + secondId + " теперь друзья.");
         return get(secondId);
     }
@@ -107,13 +116,14 @@ public class UserDbStorage implements UserStorage {
     public User deleteFriend(int firstId, int secondId) {
         String sqlQuery = "DELETE FROM friends WHERE user1_id = ? AND user2_id = ?;";
         jdbcTemplate.update(sqlQuery, firstId, secondId);
+        feedStorage.deleteFriendEvent(firstId, secondId);
         log.info("Пользователи с ID - " + firstId + " и ID - " + secondId + " больше не друзья.");
         return get(secondId);
     }
 
-
     @Override
     public List<User> getFriendsList(int id) {
+        get(id);
         String sqlQuery = "SELECT user_id, name, login, email, birthday" +
                 " FROM users WHERE USER_ID" +
                 " IN (SELECT USER2_ID FROM friends WHERE USER1_ID = ?);";
@@ -128,5 +138,10 @@ public class UserDbStorage implements UserStorage {
                 " WHERE friends.USER1_ID = ? AND friends.USER2_ID IN " +
                 " (SELECT USER2_ID FROM friends WHERE USER1_ID = ?); ";
         return jdbcTemplate.query(sqlQuery, new UserMapper(), firstId, secondId);
+    }
+
+    @Override
+    public List<Event> getUserFeed(int id) {
+        return feedStorage.getUserFeed(id);
     }
 }
