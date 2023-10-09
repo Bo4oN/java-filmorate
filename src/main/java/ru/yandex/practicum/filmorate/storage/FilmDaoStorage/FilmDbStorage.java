@@ -14,6 +14,7 @@ import ru.yandex.practicum.filmorate.model.FilmSortBy;
 import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.storage.DirectorDaoStorage.DirectorStorage;
 import ru.yandex.practicum.filmorate.model.Mpa;
+import ru.yandex.practicum.filmorate.storage.DirectorDaoStorage.DirectorStorage;
 import ru.yandex.practicum.filmorate.storage.FeedDBStorage.FeedStorage;
 import ru.yandex.practicum.filmorate.storage.GenreDaoStorage.GenreStorage;
 
@@ -121,21 +122,96 @@ public class FilmDbStorage implements FilmStorage {
     }
 
     @Override
-    public List<Film> getTopFilms(int count) {
-        String sqlQuery = "SELECT FILMS.FILM_ID, FILMS.NAME AS FN, DESCRIPTION, DURATION, RELEASE_DATE, " +
-                "MPA.MPA_ID, MPA.NAME AS MN, " +
-                "COUNT(LIKE_ID) AS film_likes " +
-                "FROM FILMS LEFT JOIN LIKES ON FILMS.FILM_ID = LIKES.FILM_ID " +
-                "LEFT JOIN MPA ON FILMS.MPA_ID = MPA.MPA_ID " +
-                "GROUP BY FILMS.FILM_ID, FN, DESCRIPTION, DURATION, RELEASE_DATE, MPA.MPA_ID, MN " +
-                "ORDER BY film_likes DESC " +
-                "LIMIT ?";
-        return jdbcTemplate.query(sqlQuery, rowMapper, count);
+    public List<Film> getTopFilms(Integer count, Integer genreId, Integer year) {
+        String sqlQuery = "SELECT F.film_id,"
+                + " F.name AS FN,"
+                + " F.description,"
+                + " F.duration,"
+                + " F.release_date, "
+                + " MPA.mpa_id, "
+                + " MPA.name AS MN, "
+                + " COUNT(like_id) FILM_LIKES, "
+                + "FROM FILMS F "
+                + "LEFT JOIN LIKES L ON F.film_id = L.film_id "
+                + "LEFT JOIN MPA ON F.mpa_id = MPA.mpa_id "
+                + getSelectionString(genreId, year)
+                + " GROUP BY F.film_id "
+                + " ORDER BY FILM_LIKES DESC "
+                + " LIMIT ?";
+
+        return getTopFilmsSelection(sqlQuery, count, genreId, year);
     }
 
+    /**
+     * Возвращает список фильмов режиссера
+     * отсортированных по количеству лайков или году выпуска.
+     *
+     * @param filmSortBy filmSortBy=[year,likes]
+     * @return список фильмов режиссера
+     */
     @Override
-    public List<Film> getFilmsOfGenre(Genre genre) {
-        return null;
+    public List<Film> getFilmDirector(int directorId, FilmSortBy filmSortBy) {
+        Map<String, String> params = filmSortBy.getParams();
+        String sqlQuery = "SELECT F.film_id,"
+                + " F.name FN,"
+                + " F.description,"
+                + " F.duration,"
+                + " F.release_date,"
+                + " MPA.mpa_id,"
+                + " MPA.name MN,"
+                + params.get("SELECT")
+                + "FROM FILMS_DIRECTOR FD "
+                + "LEFT JOIN FILMS F ON FD.film_id = F.film_id "
+                + params.get("LEFT JOIN")
+                + "LEFT JOIN MPA ON F.MPA_ID = MPA.MPA_ID "
+                + " WHERE FD.director_id = ? "
+                + "GROUP BY F.FILM_ID "
+                + params.get("ORDER BY") + ";";
+        return jdbcTemplate.query(sqlQuery, rowMapper, directorId);
+    }
+
+    private String getSelectionString(Integer genreId, Integer year) {
+        String search = "";
+
+        if (genreId == null) {
+            if (year != null) {
+                search = " WHERE EXTRACT(YEAR FROM CAST (F.release_date as DATE)) = ? ";
+            }
+        } else {
+            search = " LEFT JOIN GENRES G ON F.film_id = G.film_id WHERE G.genre_types_id = ? ";
+            if (year != null) {
+                search += " AND EXTRACT(YEAR FROM CAST (F.release_date as DATE)) = ? ";
+            }
+        }
+        return search;
+    }
+
+    private List<Film> getTopFilmsSelection(String sqlQuery, Integer count, Integer genreId, Integer year) {
+        if (genreId == null) {
+            if (year != null) {
+                return jdbcTemplate.query(sqlQuery, rowMapper, year, count);
+            }
+            return jdbcTemplate.query(sqlQuery, rowMapper, count);
+        } else {
+            if (year != null) {
+                return jdbcTemplate.query(sqlQuery, rowMapper, genreId, year, count);
+            }
+            return jdbcTemplate.query(sqlQuery, rowMapper, genreId, count);
+        }
+    }
+
+    private Film updateFilmData(Film film) {
+        if (film.getGenres() != null) {
+            genreStorage.updateFilmToGenre(film);
+        } else {
+            genreStorage.deleteFilmToGenre(film);
+        }
+        if (film.getDirectors() != null) {
+            directorStorage.updateFilmDirector(film);
+        } else {
+            directorStorage.deleteFilmDirector(film);
+        }
+        return get(film.getId());
     }
 
 
