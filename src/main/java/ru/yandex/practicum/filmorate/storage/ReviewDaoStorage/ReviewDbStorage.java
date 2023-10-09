@@ -9,6 +9,7 @@ import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.exceptions.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Review;
+import ru.yandex.practicum.filmorate.storage.FeedDBStorage.FeedStorage;
 
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -21,6 +22,7 @@ import java.util.List;
 public class ReviewDbStorage implements ReviewStorage {
 
     private final JdbcTemplate jdbcTemplate;
+    private final FeedStorage feedStorage;
 
     @Override
     public Review addReview(Review review) {
@@ -34,16 +36,18 @@ public class ReviewDbStorage implements ReviewStorage {
             statement.setLong(4, review.getFilmId());
             return statement;
         }, keyHolder);
+        feedStorage.addReviewEvent(review.getUserId(), keyHolder.getKey().intValue());
         return getReviewById(keyHolder.getKey().longValue());
     }
 
     @Override
     public Review updateReview(Review review) {
         String sqlQuery = "UPDATE reviews SET content = ?, is_positive = ? WHERE review_id = ?";
-
         jdbcTemplate.update(sqlQuery, review.getContent(), review.getIsPositive(), review.getReviewId());
         try {
-            return getReviewById(review.getReviewId());
+            final Review rev = getReviewById(review.getReviewId());
+            feedStorage.updateReviewEvent(review.getUserId(), review.getReviewId());
+            return rev;
         } catch (EmptyResultDataAccessException e) {
             String error = String.format("Review with ID:%d not found", review.getReviewId());
             log.error(error);
@@ -52,7 +56,10 @@ public class ReviewDbStorage implements ReviewStorage {
     }
 
     @Override
-    public void deleteReview(long id) {
+    public void deleteReview(int id) {
+        String sqlFeed = "SELECT user_id FROM reviews WHERE review_id = ?";
+        int userId = jdbcTemplate.queryForObject(sqlFeed, Integer.class, id);
+        //int reviewID = Integer.parseInt(String.valueOf(id));
         String sqlQuery = "DELETE FROM reviews WHERE review_id = ?";
         int rowsNum = jdbcTemplate.update(sqlQuery, id);
         if (rowsNum == 0) {
@@ -60,6 +67,7 @@ public class ReviewDbStorage implements ReviewStorage {
             log.error(error);
             throw new NotFoundException(error);
         }
+        feedStorage.deleteReviewEvent(userId, id);
     }
 
     @Override
@@ -97,7 +105,9 @@ public class ReviewDbStorage implements ReviewStorage {
     }
 
     @Override
-    public void addLike(long reviewId) {
+    public void addLike(/*long*/int reviewId, int userId) {
+        //String sqlFeed = "SELECT user_id FROM reviews WHERE review_id = ?";
+        //int userId = jdbcTemplate.queryForObject(sqlFeed, Integer.class, reviewId);
         String sqlQuery = "UPDATE reviews SET useful = useful+1 WHERE review_id = ?";
         int rowsNum = jdbcTemplate.update(sqlQuery, reviewId);
         if (rowsNum == 0) {
@@ -105,10 +115,13 @@ public class ReviewDbStorage implements ReviewStorage {
             log.error(error);
             throw new NotFoundException(error);
         }
+        //feedStorage.addLikeEvent(userId, reviewId);
     }
 
     @Override
-    public void addDislike(long reviewId) {
+    public void addDislike(/*long*/int reviewId, int userId) {
+        //String sqlFeed = "SELECT user_id FROM reviews WHERE review_id = ?";
+        //int userId = jdbcTemplate.queryForObject(sqlFeed, Integer.class, reviewId);
         String sqlQuery = "UPDATE reviews SET useful = useful-1 WHERE review_id = ?";
         int rowsNum = jdbcTemplate.update(sqlQuery, reviewId);
         if (rowsNum == 0) {
@@ -116,11 +129,12 @@ public class ReviewDbStorage implements ReviewStorage {
             log.error(error);
             throw new NotFoundException(error);
         }
+        //feedStorage.addLikeEvent(userId, reviewId);
     }
 
     private Review mapRowToReview(ResultSet resultSet, int rowNum) throws SQLException {
         Review review = new Review(
-                resultSet.getLong("review_id"),
+                resultSet.getInt/*Long*/("review_id"),
                 resultSet.getString("content"),
                 resultSet.getBoolean("is_positive"),
                 resultSet.getInt("user_id"),

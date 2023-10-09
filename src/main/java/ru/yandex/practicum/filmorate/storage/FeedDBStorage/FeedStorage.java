@@ -9,17 +9,17 @@ import java.util.List;
 public interface FeedStorage {
     void addFriendEvent(int userId, int newFriendId);
 
-    void deleteFriend(int userId, int friendId);
+    void deleteFriendEvent(int userId, int friendId);
 
-    void addLike(int userId, int filmId);
+    void addLikeEvent(int userId, int entityId);
 
-    void deleteLike(int userId, int filmId);
+    void deleteLikeEvent(int userId, int entityId);
 
-    void addReview(int userId, int filmId);
+    void addReviewEvent(int userId, int reviewId);
 
-    void updateReview(int userId, int filmId);
+    void updateReviewEvent(int userId, int reviewId);
 
-    void deleteReview(int userId, int filmId);
+    void deleteReviewEvent(int userId, int reviewId);
 
     List<Event> getUserFeed(int id);
 }

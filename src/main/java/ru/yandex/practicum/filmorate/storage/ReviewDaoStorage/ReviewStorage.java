@@ -8,7 +8,7 @@ public interface ReviewStorage {
 
     Review updateReview(Review review);
 
-    void deleteReview(long id);
+    void deleteReview(/*long*/int id);
 
     Review getReviewById(long id);
 
@@ -16,7 +16,7 @@ public interface ReviewStorage {
 
     List<Review> getAllReviews(int count);
 
-    void addLike(long reviewId);
+    void addLike(/*long*/int reviewId, int userId);
 
-    void addDislike(long reviewId);
+    void addDislike(/*long*/int reviewId, int userId);
 }

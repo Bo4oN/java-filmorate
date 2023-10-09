@@ -34,7 +34,7 @@ public class ReviewController {
 
     @ResponseBody
     @DeleteMapping("/{id}")
-    public void deleteReview(@PathVariable long id) {
+    public void deleteReview(@PathVariable /*long*/int id) {
         log.info("Запрос на удаление отзыва");
         reviewService.deleteReview(id);
     }
@@ -53,29 +53,30 @@ public class ReviewController {
 
     @ResponseBody
     @PutMapping("/{id}/like/{userId}")
-    public void addLike(@PathVariable long id, @PathVariable int userId) {
+    public void addLike(@PathVariable /*long*/int id, @PathVariable int userId) {
         log.info("Лайк!");
-        reviewService.addLike(id);
+        reviewService.addLike(id, userId);
     }
 
     @ResponseBody
     @PutMapping("/{id}/dislike/{userId}")
-    public void addDislike(@PathVariable long id, @PathVariable int userId) {
+    public void addDislike(@PathVariable /*long*/int id, @PathVariable int userId) {
         log.info("Дизлайк!");
-        reviewService.addDislike(id);
+        reviewService.addDislike(id, userId);
     }
 
     @ResponseBody
     @DeleteMapping("/{id}/like/{userId}")
-    public void deleteLike(@PathVariable long id, @PathVariable int userId) {
+    public void deleteLike(@PathVariable /*long*/int id, @PathVariable int userId) {
         log.info("Удалить лайк!");
-        reviewService.addDislike(id);
+        reviewService.addDislike(id, userId);
     }
 
     @ResponseBody
     @DeleteMapping("/{id}/dislike/{userId}")
-    public void deleteDislike(@PathVariable long id, @PathVariable int userId) {
+    public void deleteDislike(@PathVariable int/*long*/ id, @PathVariable int userId) {
         log.info("Удалить дизлайк!");
-        reviewService.addLike(id);
+        reviewService.addLike(id, userId);
+        reviewService.deleteDislike(id, userId);
     }
 }

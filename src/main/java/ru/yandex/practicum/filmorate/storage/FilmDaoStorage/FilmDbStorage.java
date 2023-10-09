@@ -117,7 +117,7 @@ public class FilmDbStorage implements FilmStorage {
     public void addLike(int filmId, int userId) {
         String sqlQuery = "INSERT INTO LIKES (FILM_ID, USER_ID) VALUES ( ?, ? )";
         jdbcTemplate.update(sqlQuery, filmId, userId);
-        feedStorage.addLike(userId, filmId);
+        feedStorage.addLikeEvent(userId, filmId);
     }
 
     @Override
@@ -127,7 +127,7 @@ public class FilmDbStorage implements FilmStorage {
         if (rowCount < 0) {
             throw new NotFoundException("Лайк от пользователя с ID = " + userId + " не найден");
         }
-        feedStorage.deleteLike(userId, filmId);
+        feedStorage.deleteLikeEvent(userId, filmId);
     }
 
     @Override

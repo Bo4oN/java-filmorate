@@ -24,33 +24,33 @@ public class FeedDBStorage implements FeedStorage {
     }
 
     @Override
-    public void deleteFriend(int userId, int friendId) {
+    public void deleteFriendEvent(int userId, int friendId) {
         createEvent(userId, friendId, EventType.FRIEND, Operation.REMOVE);
     }
 
     @Override
-    public void addLike(int userId, int filmId) {
+    public void addLikeEvent(int userId, int filmId) {
         createEvent(userId, filmId, EventType.LIKE, Operation.ADD);
     }
 
     @Override
-    public void deleteLike(int userId, int filmId) {
+    public void deleteLikeEvent(int userId, int filmId) {
         createEvent(userId, filmId, EventType.LIKE, Operation.REMOVE);
     }
 
     @Override
-    public void addReview(int userId, int filmId) {
-        createEvent(userId, filmId, EventType.REVIEW, Operation.ADD);
+    public void addReviewEvent(int userId, int reviewId) {
+        createEvent(userId, reviewId, EventType.REVIEW, Operation.ADD);
     }
 
     @Override
-    public void deleteReview(int userId, int filmId) {
-        createEvent(userId, filmId, EventType.REVIEW, Operation.REMOVE);
+    public void deleteReviewEvent(int userId, int reviewId) {
+        createEvent(userId, reviewId, EventType.REVIEW, Operation.REMOVE);
     }
 
     @Override
-    public void updateReview(int userId, int filmId) {
-        createEvent(userId, filmId, EventType.REVIEW, Operation.UPDATE);
+    public void updateReviewEvent(int userId, int reviewId) {
+        //createEvent(userId, reviewId, EventType.REVIEW, Operation.UPDATE);
     }
 
     @Override
@@ -59,12 +59,12 @@ public class FeedDBStorage implements FeedStorage {
         if (jdbcTemplate.queryForObject(sql, Integer.class) == 0) {
             throw new NotFoundException("Пользователя с ID - " + id + " нет в базе.");
         }
-        sql = "SELECT e.event_id, e.timestamp, e.user_id, e.entity_id, e.event_type, e.operation " +
+        sql = "select * from events where user_id = " + id/*"SELECT e.event_id, e.timestamp, e.user_id, e.entity_id, e.event_type, e.operation " +
                 "FROM events AS e " +
                 "LEFT OUTER JOIN friends AS fr ON e.user_id = fr.user2_id " +
                 "WHERE fr.user1_id = " + id +
                 " GROUP BY e.event_id " +
-                "ORDER BY e.event_id DESC";
+                "ORDER BY e.event_id DESC"*/;
         return jdbcTemplate.query(sql, new FeedMapper());
     }
 

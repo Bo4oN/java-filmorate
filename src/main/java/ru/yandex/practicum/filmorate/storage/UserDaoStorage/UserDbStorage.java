@@ -111,7 +111,7 @@ public class UserDbStorage implements UserStorage {
     public User deleteFriend(int firstId, int secondId) {
         String sqlQuery = "DELETE FROM friends WHERE user1_id = ? AND user2_id = ?;";
         jdbcTemplate.update(sqlQuery, firstId, secondId);
-        feedStorage.deleteFriend(firstId, secondId);
+        feedStorage.deleteFriendEvent(firstId, secondId);
         log.info("Пользователи с ID - " + firstId + " и ID - " + secondId + " больше не друзья.");
         return get(secondId);
     }
