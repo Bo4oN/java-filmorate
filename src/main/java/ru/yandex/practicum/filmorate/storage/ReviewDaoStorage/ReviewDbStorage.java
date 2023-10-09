@@ -20,7 +20,6 @@ import java.util.List;
 @RequiredArgsConstructor
 @Slf4j
 public class ReviewDbStorage implements ReviewStorage {
-
     private final JdbcTemplate jdbcTemplate;
     private final FeedStorage feedStorage;
 
@@ -36,8 +35,9 @@ public class ReviewDbStorage implements ReviewStorage {
             statement.setLong(4, review.getFilmId());
             return statement;
         }, keyHolder);
-        feedStorage.addReviewEvent(review.getUserId(), keyHolder.getKey().intValue());
-        return getReviewById(keyHolder.getKey().longValue());
+        long reviewId = keyHolder.getKey().longValue();
+        feedStorage.addReviewEvent(review.getUserId(), reviewId);
+        return getReviewById(reviewId);
     }
 
     @Override
@@ -46,7 +46,7 @@ public class ReviewDbStorage implements ReviewStorage {
         jdbcTemplate.update(sqlQuery, review.getContent(), review.getIsPositive(), review.getReviewId());
         try {
             final Review rev = getReviewById(review.getReviewId());
-            feedStorage.updateReviewEvent(review.getUserId(), review.getReviewId());
+            feedStorage.updateReviewEvent(rev.getUserId(), rev.getReviewId());
             return rev;
         } catch (EmptyResultDataAccessException e) {
             String error = String.format("Review with ID:%d not found", review.getReviewId());
@@ -56,10 +56,8 @@ public class ReviewDbStorage implements ReviewStorage {
     }
 
     @Override
-    public void deleteReview(int id) {
-        String sqlFeed = "SELECT user_id FROM reviews WHERE review_id = ?";
-        int userId = jdbcTemplate.queryForObject(sqlFeed, Integer.class, id);
-        //int reviewID = Integer.parseInt(String.valueOf(id));
+    public void deleteReview(long id) {
+        int userId = jdbcTemplate.queryForObject("SELECT user_id FROM reviews WHERE review_id = ?", Integer.class, id);
         String sqlQuery = "DELETE FROM reviews WHERE review_id = ?";
         int rowsNum = jdbcTemplate.update(sqlQuery, id);
         if (rowsNum == 0) {
@@ -105,9 +103,7 @@ public class ReviewDbStorage implements ReviewStorage {
     }
 
     @Override
-    public void addLike(/*long*/int reviewId, int userId) {
-        //String sqlFeed = "SELECT user_id FROM reviews WHERE review_id = ?";
-        //int userId = jdbcTemplate.queryForObject(sqlFeed, Integer.class, reviewId);
+    public void addLike(long reviewId) {
         String sqlQuery = "UPDATE reviews SET useful = useful+1 WHERE review_id = ?";
         int rowsNum = jdbcTemplate.update(sqlQuery, reviewId);
         if (rowsNum == 0) {
@@ -115,13 +111,10 @@ public class ReviewDbStorage implements ReviewStorage {
             log.error(error);
             throw new NotFoundException(error);
         }
-        //feedStorage.addLikeEvent(userId, reviewId);
     }
 
     @Override
-    public void addDislike(/*long*/int reviewId, int userId) {
-        //String sqlFeed = "SELECT user_id FROM reviews WHERE review_id = ?";
-        //int userId = jdbcTemplate.queryForObject(sqlFeed, Integer.class, reviewId);
+    public void addDislike(long reviewId) {
         String sqlQuery = "UPDATE reviews SET useful = useful-1 WHERE review_id = ?";
         int rowsNum = jdbcTemplate.update(sqlQuery, reviewId);
         if (rowsNum == 0) {
@@ -129,7 +122,6 @@ public class ReviewDbStorage implements ReviewStorage {
             log.error(error);
             throw new NotFoundException(error);
         }
-        //feedStorage.addLikeEvent(userId, reviewId);
     }
 
     private Review mapRowToReview(ResultSet resultSet, int rowNum) throws SQLException {
@@ -142,6 +134,5 @@ public class ReviewDbStorage implements ReviewStorage {
                 resultSet.getInt("useful")
         );
         return review;
-
     }
 }

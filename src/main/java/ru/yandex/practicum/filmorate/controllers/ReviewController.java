@@ -12,7 +12,7 @@ import java.util.Collection;
 @RestController
 @RequestMapping("/reviews")
 public class ReviewController {
-    private final ReviewService reviewService;
+private final ReviewService reviewService;
 
     public ReviewController(ReviewService reviewService) {
         this.reviewService = reviewService;
@@ -34,7 +34,7 @@ public class ReviewController {
 
     @ResponseBody
     @DeleteMapping("/{id}")
-    public void deleteReview(@PathVariable /*long*/int id) {
+    public void deleteReview(@PathVariable long id) {
         log.info("Запрос на удаление отзыва");
         reviewService.deleteReview(id);
     }
@@ -53,30 +53,29 @@ public class ReviewController {
 
     @ResponseBody
     @PutMapping("/{id}/like/{userId}")
-    public void addLike(@PathVariable /*long*/int id, @PathVariable int userId) {
+    public void addLike(@PathVariable long id, @PathVariable int userId) {
         log.info("Лайк!");
-        reviewService.addLike(id, userId);
+        reviewService.addLike(id);
     }
 
     @ResponseBody
     @PutMapping("/{id}/dislike/{userId}")
-    public void addDislike(@PathVariable /*long*/int id, @PathVariable int userId) {
+    public void addDislike(@PathVariable long id, @PathVariable int userId) {
         log.info("Дизлайк!");
-        reviewService.addDislike(id, userId);
+        reviewService.addDislike(id);
     }
 
     @ResponseBody
     @DeleteMapping("/{id}/like/{userId}")
-    public void deleteLike(@PathVariable /*long*/int id, @PathVariable int userId) {
+    public void deleteLike(@PathVariable long id, @PathVariable int userId) {
         log.info("Удалить лайк!");
-        reviewService.addDislike(id, userId);
+        reviewService.addDislike(id);
     }
 
     @ResponseBody
     @DeleteMapping("/{id}/dislike/{userId}")
-    public void deleteDislike(@PathVariable int/*long*/ id, @PathVariable int userId) {
+    public void deleteDislike(@PathVariable long id, @PathVariable int userId) {
         log.info("Удалить дизлайк!");
-        reviewService.addLike(id, userId);
-        reviewService.deleteDislike(id, userId);
+        reviewService.addLike(id);
     }
 }

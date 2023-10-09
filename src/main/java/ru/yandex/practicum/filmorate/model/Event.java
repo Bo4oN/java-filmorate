@@ -5,8 +5,6 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.time.LocalDateTime;
-
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
@@ -16,6 +14,6 @@ public class Event {
     int userId;
     EventType eventType;
     Operation operation;
-    int eventId;
-    int entityId;
+    long eventId;
+    long entityId;
 }

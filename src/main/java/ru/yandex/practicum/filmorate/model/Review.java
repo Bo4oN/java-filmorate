@@ -9,7 +9,7 @@ import javax.validation.constraints.NotNull;
 @Data
 @AllArgsConstructor
 public class Review {
-    private final int/*long*/ reviewId;
+    private final long reviewId;
     @NotBlank
     private String content;
     @NotNull

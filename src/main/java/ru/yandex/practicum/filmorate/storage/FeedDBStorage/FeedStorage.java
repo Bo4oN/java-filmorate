@@ -1,25 +1,23 @@
 package ru.yandex.practicum.filmorate.storage.FeedDBStorage;
 
 import ru.yandex.practicum.filmorate.model.Event;
-import ru.yandex.practicum.filmorate.model.EventType;
-import ru.yandex.practicum.filmorate.model.Operation;
 
 import java.util.List;
 
 public interface FeedStorage {
-    void addFriendEvent(int userId, int newFriendId);
+    void addFriendEvent(long userId, long newFriendId);
 
-    void deleteFriendEvent(int userId, int friendId);
+    void deleteFriendEvent(long userId, long friendId);
 
-    void addLikeEvent(int userId, int entityId);
+    void addLikeEvent(long userId, long entityId);
 
-    void deleteLikeEvent(int userId, int entityId);
+    void deleteLikeEvent(long userId, long entityId);
 
-    void addReviewEvent(int userId, int reviewId);
+    void addReviewEvent(long userId, long reviewId);
 
-    void updateReviewEvent(int userId, int reviewId);
+    void updateReviewEvent(long userId, long reviewId);
 
-    void deleteReviewEvent(int userId, int reviewId);
+    void deleteReviewEvent(long userId, long reviewId);
 
-    List<Event> getUserFeed(int id);
+    List<Event> getUserFeed(long id);
 }

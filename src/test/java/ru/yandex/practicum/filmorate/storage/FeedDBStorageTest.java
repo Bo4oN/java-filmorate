@@ -13,8 +13,10 @@ import ru.yandex.practicum.filmorate.model.EventType;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Mpa;
 import ru.yandex.practicum.filmorate.model.Operation;
+import ru.yandex.practicum.filmorate.model.Review;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.FilmDaoStorage.FilmDbStorage;
+import ru.yandex.practicum.filmorate.storage.ReviewDaoStorage.ReviewDbStorage;
 import ru.yandex.practicum.filmorate.storage.UserDaoStorage.UserDbStorage;
 
 import java.time.LocalDate;
@@ -27,6 +29,7 @@ import java.util.List;
 class FeedDBStorageTest {
     private final UserDbStorage userDbStorage;
     private final FilmDbStorage filmDbStorage;
+    private final ReviewDbStorage reviewDbStorage;
 
     private Film film1;
     private Film film2;
@@ -35,6 +38,8 @@ class FeedDBStorageTest {
     private User user2;
     private User user3;
     private User user4;
+
+    private Review review1;
 
     @BeforeEach
     public void fillDataBase() {
@@ -57,6 +62,8 @@ class FeedDBStorageTest {
                 LocalDate.of(1995, 9, 22), 127L, new Mpa(4, "R"));
         filmDbStorage.add(film1);
         filmDbStorage.add(film2);
+
+        review1 = new Review(1, "content", true, user1.getId(), film1.getId(), 1);
     }
 
     @Test
@@ -64,7 +71,7 @@ class FeedDBStorageTest {
         userDbStorage.addFriend(user1.getId(), user2.getId());
         userDbStorage.addFriend(user1.getId(), user3.getId());
         userDbStorage.addFriend(user2.getId(), user4.getId());
-        Assertions.assertThat(userDbStorage.getUserFeed(user1.getId()).size()).isEqualTo(1);
+        Assertions.assertThat(userDbStorage.getUserFeed(user1.getId()).size()).isEqualTo(2);
         Assertions.assertThat(userDbStorage.getUserFeed(user1.getId()).get(0).getEventType()).isEqualTo(EventType.FRIEND);
         Assertions.assertThat(userDbStorage.getUserFeed(user1.getId()).get(0).getOperation()).isEqualTo(Operation.ADD);
     }
@@ -76,47 +83,61 @@ class FeedDBStorageTest {
         userDbStorage.addFriend(user2.getId(), user4.getId());
         userDbStorage.deleteFriend(user2.getId(), user4.getId());
         List<Event> list = userDbStorage.getUserFeed(user1.getId());
+        List<Event> list1 = userDbStorage.getUserFeed(user2.getId());
         Assertions.assertThat(list.size()).isEqualTo(2);
-        Assertions.assertThat(list.get(0).getEntityId()).isEqualTo(user4.getId());
-        Assertions.assertThat(list.get(0).getEventType()).isEqualTo(EventType.FRIEND);
-        Assertions.assertThat(list.get(0).getOperation()).isEqualTo(Operation.REMOVE);
+        Assertions.assertThat(list.get(1).getEventType()).isEqualTo(EventType.FRIEND);
+        Assertions.assertThat(list.get(1).getOperation()).isEqualTo(Operation.ADD);
+        Assertions.assertThat(list1.get(1).getEntityId()).isEqualTo(user4.getId());
+        Assertions.assertThat(list1.get(1).getOperation()).isEqualTo(Operation.REMOVE);
     }
 
     @Test
     void shouldAddLikeAndReturnThreeActivitiesSuccessfully() {
         userDbStorage.addFriend(user1.getId(), user2.getId());
         userDbStorage.addFriend(user1.getId(), user3.getId());
-        filmDbStorage.addLike(film1.getId(), user2.getId());
+        filmDbStorage.addLike(film1.getId(), user1.getId());
         filmDbStorage.addLike(film1.getId(), user3.getId());
         filmDbStorage.addLike(film2.getId(), user3.getId());
         List<Event> list = userDbStorage.getUserFeed(user1.getId());
         Assertions.assertThat(list.size()).isEqualTo(3);
-        Assertions.assertThat(list.get(0).getEventType()).isEqualTo(EventType.LIKE);
+        Assertions.assertThat(list.get(0).getEventType()).isEqualTo(EventType.FRIEND);
         Assertions.assertThat(list.get(0).getOperation()).isEqualTo(Operation.ADD);
     }
 
     @Test
-    void shouldRemoveLikeAndReturnThreeActivitiesSuccessfully() {
+    void shouldRemoveLikeAndReturnFourActivitiesSuccessfully() {
         userDbStorage.addFriend(user1.getId(), user2.getId());
         userDbStorage.addFriend(user1.getId(), user3.getId());
-        filmDbStorage.addLike(film1.getId(), user2.getId());
-        filmDbStorage.addLike(film1.getId(), user3.getId());
+        filmDbStorage.addLike(film1.getId(), user1.getId());
         filmDbStorage.deleteLike(film1.getId(), user3.getId());
         List<Event> list = userDbStorage.getUserFeed(user1.getId());
         Assertions.assertThat(list.size()).isEqualTo(3);
-        Assertions.assertThat(list.get(0).getEventType()).isEqualTo(EventType.LIKE);
-        Assertions.assertThat(list.get(0).getOperation()).isEqualTo(Operation.REMOVE);
+        Assertions.assertThat(list.get(0).getEventType()).isEqualTo(EventType.FRIEND);
+        Assertions.assertThat(list.get(0).getOperation()).isEqualTo(Operation.ADD);
     }
 
     @Test
-    void addReview() {
+    void shouldAddReviewSuccessfully() {
+        reviewDbStorage.addReview(review1);
+        Event event = userDbStorage.getUserFeed(user1.getId()).get(0);
+        Assertions.assertThat(event.getUserId()).isEqualTo(1);
+        Assertions.assertThat(event.getOperation()).isEqualTo(Operation.ADD);
     }
 
     @Test
-    void deleteReview() {
+    void shouldDeleteReviewSuccessfully() {
+        reviewDbStorage.addReview(review1);
+        Assertions.assertThat(userDbStorage.getUserFeed(user1.getId()).size()).isEqualTo(1);
+        reviewDbStorage.deleteReview(review1.getReviewId());
+        Assertions.assertThat(userDbStorage.getUserFeed(user1.getId()).size()).isEqualTo(2);
     }
 
     @Test
-    void updateReview() {
+    void shouldUpdateReviewSuccessfully() {
+        reviewDbStorage.addReview(review1);
+        Assertions.assertThat(userDbStorage.getUserFeed(user1.getId()).size()).isEqualTo(1);
+        review1.setContent("new content");
+        reviewDbStorage.updateReview(review1);
+        Assertions.assertThat(userDbStorage.getUserFeed(user1.getId()).get(1).getOperation()).isEqualTo(Operation.UPDATE);
     }
 }
