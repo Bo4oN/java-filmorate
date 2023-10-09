@@ -12,7 +12,7 @@ import java.util.Collection;
 @RestController
 @RequestMapping("/reviews")
 public class ReviewController {
-private final ReviewService reviewService;
+    private final ReviewService reviewService;
 
     public ReviewController(ReviewService reviewService) {
         this.reviewService = reviewService;

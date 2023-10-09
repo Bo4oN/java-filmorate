@@ -126,7 +126,7 @@ public class ReviewDbStorage implements ReviewStorage {
 
     private Review mapRowToReview(ResultSet resultSet, int rowNum) throws SQLException {
         Review review = new Review(
-                resultSet.getInt/*Long*/("review_id"),
+                resultSet.getLong("review_id"),
                 resultSet.getString("content"),
                 resultSet.getBoolean("is_positive"),
                 resultSet.getInt("user_id"),
