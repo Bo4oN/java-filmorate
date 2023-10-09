@@ -85,6 +85,17 @@ public class FilmController {
         return filmService.getTopFilms(Integer.parseInt(count));
     }
 
+
+    @ResponseBody
+    @GetMapping("/common")
+    public List<Film> getCommonTopFilm(
+            @RequestParam(name = "userId") int userId,
+            @RequestParam(name = "friendId") int friendId
+    ) {
+        log.info("Запрос на получение общих фильмов пользователей {} и {} с сортировкой по популярности",
+                userId, friendId);
+        return filmService.getCommonTopFilm(userId, friendId);
+
     /**
      * Возвращает список фильмов режиссера
      * отсортированных по количеству лайков или году выпуска.
@@ -96,5 +107,6 @@ public class FilmController {
     @GetMapping
     public List<Film> getDirectorFilms(@PathVariable int directorId, @RequestParam(name = "sortBy", defaultValue = "none") String sortBy) {
         return filmService.getDirectorFilms(directorId, sortBy.toUpperCase());
+
     }
 }

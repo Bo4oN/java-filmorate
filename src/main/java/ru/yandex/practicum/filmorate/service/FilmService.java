@@ -8,6 +8,7 @@ import ru.yandex.practicum.filmorate.exceptions.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.FilmSortBy;
 import ru.yandex.practicum.filmorate.storage.FilmDaoStorage.FilmStorage;
+import ru.yandex.practicum.filmorate.storage.UserDaoStorage.UserStorage;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -16,11 +17,13 @@ import java.util.List;
 @Service
 public class FilmService {
     private final FilmStorage storage;
+    private final UserStorage userStorage;
     private static final LocalDate BIRTHDAY_MOVIE = LocalDate.of(1895, 12, 28);
 
     @Autowired
-    public FilmService(FilmStorage storage) {
+    public FilmService(FilmStorage storage, UserStorage userStorage) {
         this.storage = storage;
+        this.userStorage = userStorage;
     }
 
     public Film addFilm(Film film) {
@@ -78,5 +81,15 @@ public class FilmService {
             log.debug("Не валидная дата премьеры.");
             throw new ValidationException("Дата премьеры фильма не может быть раньше 28 декабря 1895г.");
         }
+    }
+
+    public List<Film> getCommonTopFilm(int userId, int friendId) {
+        if (userId == friendId) {
+            log.error("Указан один и тот же идентификатор");
+            throw new RuntimeException("Указан один и тот же идентификатор");
+        }
+        userStorage.get(userId);
+        userStorage.get(friendId);
+        return storage.getCommonTopFilm(userId, friendId);
     }
 }
