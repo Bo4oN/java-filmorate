@@ -3,13 +3,15 @@ package ru.yandex.practicum.filmorate.service;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.exceptions.NotFoundException;
 import ru.yandex.practicum.filmorate.exceptions.ValidationException;
+import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.FilmSortBy;
 import ru.yandex.practicum.filmorate.storage.FilmDaoStorage.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.UserDaoStorage.UserStorage;
 
 import java.time.LocalDate;
-import java.util.*;
+import java.util.List;
 
 @Slf4j
 @Service
@@ -38,6 +40,10 @@ public class FilmService {
         return storage.get(id);
     }
 
+    public void deleteFilm(int id) {
+        storage.deleteFilm(id);
+    }
+
     public List<Film> getAllFilms() {
         return storage.getAll();
     }
@@ -54,10 +60,26 @@ public class FilmService {
         return storage.getTopFilms(count);
     }
 
+    public List<Film> getDirectorFilms(int directorId, String sortBy) {
+        List<Film> directorFilms = storage.getFilmDirector(
+                directorId,
+                FilmSortBy.valueOf(sortBy.toUpperCase())
+        );
+
+        if (directorFilms.isEmpty()) {
+            String error = String.format("Director with ID:%d not found", directorId);
+            log.error(error);
+            throw new NotFoundException(error);
+        }
+
+        log.info("Director Films\n{}", directorFilms);
+        return directorFilms;
+    }
+
     private void validationFilm(Film film) {
         if (film.getReleaseDate().isBefore(BIRTHDAY_MOVIE)) {
             log.debug("Не валидная дата премьеры.");
-            throw new ValidationException("Дата премьеры фильма не может быть раньше 28 декабря 1985г.");
+            throw new ValidationException("Дата премьеры фильма не может быть раньше 28 декабря 1895г.");
         }
     }
 

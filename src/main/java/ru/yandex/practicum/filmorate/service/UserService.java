@@ -3,6 +3,8 @@ package ru.yandex.practicum.filmorate.service;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.Event;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.UserDaoStorage.UserStorage;
 
@@ -33,6 +35,10 @@ public class UserService {
         return userStorage.get(id);
     }
 
+    public void deleteUser(int id) {
+        userStorage.delete(id);
+    }
+
     public List<User> getUsers() {
         return userStorage.getAll();
     }
@@ -58,5 +64,13 @@ public class UserService {
             user.setName(user.getLogin());
             log.info("Имя пользователя не добавлено, оно становится равно логину - '{}'", user.getLogin());
         }
+    }
+
+    public List<Film> getRecommendations(int id) {
+        return userStorage.getRecommendations(id);
+    }
+
+    public List<Event> getUserFeed(int id) {
+        return userStorage.getUserFeed(id);
     }
 }
