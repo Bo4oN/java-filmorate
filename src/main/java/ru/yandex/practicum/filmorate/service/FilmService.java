@@ -35,6 +35,10 @@ public class FilmService {
         return storage.get(id);
     }
 
+    public void deleteFilm(int id) {
+        storage.deleteFilm(id);
+    }
+
     public List<Film> getAllFilms() {
         return storage.getAll();
     }
