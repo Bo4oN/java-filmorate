@@ -12,7 +12,6 @@ import ru.yandex.practicum.filmorate.exceptions.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.FilmSortBy;
 import ru.yandex.practicum.filmorate.storage.DirectorDaoStorage.DirectorStorage;
-import ru.yandex.practicum.filmorate.model.Mpa;
 import ru.yandex.practicum.filmorate.storage.FeedDBStorage.FeedStorage;
 import ru.yandex.practicum.filmorate.storage.GenreDaoStorage.GenreStorage;
 
@@ -210,5 +209,32 @@ public class FilmDbStorage implements FilmStorage {
             directorStorage.deleteFilmDirector(film);
         }
         return get(film.getId());
+    }
+
+
+    @Override
+    public List<Film> getCommonTopFilm(int userId, int friendId) {
+        String sql = "SELECT " +
+                "f.FILM_ID, " +
+                "f.NAME AS FN, " +
+                "f.DESCRIPTION, " +
+                "f.DURATION, " +
+                "f.RELEASE_DATE, " +
+                "m.MPA_ID, " +
+                "m.NAME AS MN, " +
+                "COUNT(l.LIKE_ID) AS film_likes " +
+                "FROM " +
+                "FILMS f " +
+                "LEFT JOIN LIKES l ON f.FILM_ID = l.FILM_ID " +
+                "LEFT JOIN MPA m ON f.MPA_ID = m.MPA_ID " +
+                "WHERE " +
+                "l.USER_ID = ? " +
+                "AND f.FILM_ID IN (SELECT film_id FROM likes WHERE user_id = ?) " +
+                "GROUP BY " +
+                "f.FILM_ID, FN, f.DESCRIPTION, f.DURATION, f.RELEASE_DATE, m.MPA_ID, MN " +
+                "ORDER BY " +
+                "film_likes DESC; ";
+
+        return jdbcTemplate.query(sql, rowMapper, userId, friendId);
     }
 }
