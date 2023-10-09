@@ -9,6 +9,7 @@ import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.exceptions.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Review;
+import ru.yandex.practicum.filmorate.storage.FeedDBStorage.FeedStorage;
 
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -19,8 +20,8 @@ import java.util.List;
 @RequiredArgsConstructor
 @Slf4j
 public class ReviewDbStorage implements ReviewStorage {
-
     private final JdbcTemplate jdbcTemplate;
+    private final FeedStorage feedStorage;
 
     @Override
     public Review addReview(Review review) {
@@ -34,16 +35,19 @@ public class ReviewDbStorage implements ReviewStorage {
             statement.setLong(4, review.getFilmId());
             return statement;
         }, keyHolder);
-        return getReviewById(keyHolder.getKey().longValue());
+        long reviewId = keyHolder.getKey().longValue();
+        feedStorage.addReviewEvent(review.getUserId(), reviewId);
+        return getReviewById(reviewId);
     }
 
     @Override
     public Review updateReview(Review review) {
         String sqlQuery = "UPDATE reviews SET content = ?, is_positive = ? WHERE review_id = ?";
-
         jdbcTemplate.update(sqlQuery, review.getContent(), review.getIsPositive(), review.getReviewId());
         try {
-            return getReviewById(review.getReviewId());
+            final Review rev = getReviewById(review.getReviewId());
+            feedStorage.updateReviewEvent(rev.getUserId(), rev.getReviewId());
+            return rev;
         } catch (EmptyResultDataAccessException e) {
             String error = String.format("Review with ID:%d not found", review.getReviewId());
             log.error(error);
@@ -53,6 +57,7 @@ public class ReviewDbStorage implements ReviewStorage {
 
     @Override
     public void deleteReview(long id) {
+        int userId = jdbcTemplate.queryForObject("SELECT user_id FROM reviews WHERE review_id = ?", Integer.class, id);
         String sqlQuery = "DELETE FROM reviews WHERE review_id = ?";
         int rowsNum = jdbcTemplate.update(sqlQuery, id);
         if (rowsNum == 0) {
@@ -60,6 +65,7 @@ public class ReviewDbStorage implements ReviewStorage {
             log.error(error);
             throw new NotFoundException(error);
         }
+        feedStorage.deleteReviewEvent(userId, id);
     }
 
     @Override
@@ -128,6 +134,5 @@ public class ReviewDbStorage implements ReviewStorage {
                 resultSet.getInt("useful")
         );
         return review;
-
     }
 }

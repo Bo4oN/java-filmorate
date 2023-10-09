@@ -42,6 +42,13 @@ public class FilmController {
     }
 
     @ResponseBody
+    @DeleteMapping("/{id}")
+    public void deleteFilmById(@PathVariable String id) {
+        log.info("Получен запрос на удаление фильма с id - {}", id);
+        filmService.deleteFilm(Integer.parseInt(id));
+    }
+
+    @ResponseBody
     @GetMapping()
     public List<Film> getAllFilms() {
         return filmService.getAllFilms();
