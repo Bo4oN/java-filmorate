@@ -140,11 +140,8 @@ public class UserDbStorage implements UserStorage {
     @Override
     public List<Film> getRecommendations(int id) {
         try {
-            get(id);
-        } catch (EmptyResultDataAccessException e) {
-            throw new NotFoundException("Пользователя с ID - " + id + " нет в базе.");
-        }
-        try {
+            get(id); // проверка существования пользователя
+
             String sql = "SELECT l2.user_id " +
                     "FROM likes l1 " +
                     "JOIN likes l2 ON l1.film_id = l2.film_id AND l1.user_id <> l2.user_id " +
@@ -164,37 +161,44 @@ public class UserDbStorage implements UserStorage {
                     "WHERE user_id = ?); "; // возвращает список id фильмов
 
             List<Integer> recommendedFilmsId = jdbcTemplate.queryForList(sql2, Integer.class, user2Id, id);
+            return parseIntListToFilmList(recommendedFilmsId);
 
-            List<Film> recommendedFilms = new ArrayList<>();
-
-            String filmSql = "SELECT FILM_ID, FILMS.NAME AS FN, DESCRIPTION, DURATION, RELEASE_DATE, " +
-                    "MPA.MPA_ID, MPA.NAME AS MN  " +
-                    "FROM FILMS LEFT JOIN MPA ON FILMS.MPA_ID = MPA.MPA_ID WHERE FILM_ID = ? " +
-                    "GROUP BY FILMS.FILM_ID, FN, DESCRIPTION, DURATION, RELEASE_DATE, MPA.MPA_ID, MN";
-
-            for (Integer filmId : recommendedFilmsId) {
-                Film film = jdbcTemplate.queryForObject(filmSql, new RowMapper<Film>() {
-                    @Override
-                    public Film mapRow(ResultSet rs, int rowNum) throws SQLException {
-                        Film film = new Film(rs.getInt("film_id"),
-                                rs.getString("fn"),
-                                rs.getString("description"),
-                                rs.getDate("release_date").toLocalDate(),
-                                rs.getLong("duration"),
-                                new Mpa(rs.getInt("mpa_id"), rs.getString("mn"))
-                        );
-                        LinkedHashSet<Genre> set =
-                                new LinkedHashSet<>(genreStorage.getGenresOfFilm(rs.getInt("film_id")));
-                        film.setGenres(set);
-                        return film;
-                    }
-                }, filmId);
-                recommendedFilms.add(film);
-            }
-
-            return recommendedFilms;
         } catch (EmptyResultDataAccessException e) {
             return List.of();
         }
     }
+
+    public List<Film> parseIntListToFilmList(List<Integer> recommendedFilmsId) {
+        List<Film> recommendedFilms = new ArrayList<>();
+
+        String filmSql = "SELECT FILM_ID, FILMS.NAME AS FN, DESCRIPTION, DURATION, RELEASE_DATE, " +
+                "MPA.MPA_ID, MPA.NAME AS MN  " +
+                "FROM FILMS LEFT JOIN MPA ON FILMS.MPA_ID = MPA.MPA_ID WHERE FILM_ID = ? " +
+                "GROUP BY FILMS.FILM_ID, FN, DESCRIPTION, DURATION, RELEASE_DATE, MPA.MPA_ID, MN";
+
+        for (Integer filmId : recommendedFilmsId) {
+            Film film = jdbcTemplate.queryForObject(filmSql, new FilmMapper(), filmId);
+            recommendedFilms.add(film);
+        }
+
+        return recommendedFilms;
+    }
+
+    public class FilmMapper implements RowMapper<Film> {
+
+        @Override
+        public Film mapRow(ResultSet rs, int rowNum) throws SQLException {
+            Film film = new Film(rs.getInt("film_id"),
+                    rs.getString("fn"),
+                    rs.getString("description"),
+                    rs.getDate("release_date").toLocalDate(),
+                    rs.getLong("duration"),
+                    new Mpa(rs.getInt("mpa_id"), rs.getString("mn"))
+            );
+            LinkedHashSet<Genre> set = new LinkedHashSet<>(genreStorage.getGenresOfFilm(rs.getInt("film_id")));
+            film.setGenres(set);
+            return film;
+        }
+    }
 }
+
