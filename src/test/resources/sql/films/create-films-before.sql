@@ -7,7 +7,6 @@ INSERT INTO mpa (name) VALUES
 ('R'),
 ('NC-17');
 
-
 ALTER TABLE films ALTER COLUMN film_id RESTART WITH 1;
 
 insert into films (name, description, release_date, mpa_id, duration) values
