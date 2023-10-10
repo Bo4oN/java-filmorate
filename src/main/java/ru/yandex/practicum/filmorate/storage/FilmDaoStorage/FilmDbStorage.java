@@ -12,6 +12,7 @@ import ru.yandex.practicum.filmorate.exceptions.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.model.Mpa;
+import ru.yandex.practicum.filmorate.storage.FeedDBStorage.FeedStorage;
 import ru.yandex.practicum.filmorate.storage.GenreDaoStorage.GenreStorage;
 
 import java.sql.ResultSet;
@@ -26,6 +27,7 @@ public class FilmDbStorage implements FilmStorage {
 
     private final JdbcTemplate jdbcTemplate;
     private final GenreStorage genreStorage;
+    private final FeedStorage feedStorage;
 
     @Override
     public Film add(Film film) {
@@ -84,6 +86,17 @@ public class FilmDbStorage implements FilmStorage {
     }
 
     @Override
+    public void deleteFilm(int id) {
+        String sqlQuery = "DELETE FROM FILMS " +
+                "WHERE film_id = " + id;
+        int row = jdbcTemplate.update(sqlQuery);
+        if (row == 0) {
+            throw new NotFoundException("Фильма с ID - " + id + " нет в базе.");
+        }
+        log.info("Фильм с id:" + id + " успешно удален.");
+    }
+
+    @Override
     public List<Film> getAll() {
         String sqlQuery = "SELECT FILM_ID, FILMS.NAME AS FN, DESCRIPTION, DURATION, RELEASE_DATE, " +
                 "MPA.MPA_ID, MPA.NAME AS MN  " +
@@ -113,6 +126,7 @@ public class FilmDbStorage implements FilmStorage {
     public void addLike(int filmId, int userId) {
         String sqlQuery = "INSERT INTO LIKES (FILM_ID, USER_ID) VALUES ( ?, ? )";
         jdbcTemplate.update(sqlQuery, filmId, userId);
+        feedStorage.addLikeEvent(userId, filmId);
     }
 
     @Override
@@ -122,6 +136,7 @@ public class FilmDbStorage implements FilmStorage {
         if (rowCount < 0) {
             throw new NotFoundException("Лайк от пользователя с ID = " + userId + " не найден");
         }
+        feedStorage.deleteLikeEvent(userId, filmId);
     }
 
     @Override
