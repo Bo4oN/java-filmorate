@@ -26,6 +26,8 @@ import ru.yandex.practicum.filmorate.storage.FilmDaoStorage.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.GenreDaoStorage.GenreDbStorage;
 import ru.yandex.practicum.filmorate.storage.GenreDaoStorage.GenreRowMapper;
 import ru.yandex.practicum.filmorate.storage.GenreDaoStorage.GenreStorage;
+import ru.yandex.practicum.filmorate.storage.UserDaoStorage.UserDbStorage;
+import ru.yandex.practicum.filmorate.storage.UserDaoStorage.UserStorage;
 
 import javax.sql.DataSource;
 import java.util.List;
@@ -75,6 +77,7 @@ class FilmServiceTest {
                     genreStorage,
                     directorStorage
             );
+    private final UserStorage userStorage = new UserDbStorage(jdbc, genreStorage, feedStorage);
     private final FilmStorage filmStorage =
             new FilmDbStorage(
                     jdbc,
@@ -83,7 +86,7 @@ class FilmServiceTest {
                     directorStorage,
                     feedStorage
             );
-    private final FilmService service = new FilmService(filmStorage);
+    private final FilmService service = new FilmService(filmStorage, userStorage);
     private final DirectorService directorService = new DirectorService(directorStorage);
 
     @Test
@@ -106,6 +109,7 @@ class FilmServiceTest {
         assertEquals("Eyes Wide Shut", directorFilms.get(7).getName());
     }
 
+    @Test
     void getTopFilmsByGenresAndYear() {
         List<Film> topTenFilmsByGenresAndYear = service.getTopFilms(10, 2, 1980);
         assertEquals(2, topTenFilmsByGenresAndYear.size());

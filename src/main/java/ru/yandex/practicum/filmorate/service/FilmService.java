@@ -19,7 +19,6 @@ public class FilmService {
     private final FilmStorage storage;
     private final UserStorage userStorage;
     private static final LocalDate BIRTHDAY_MOVIE = LocalDate.of(1895, 12, 28);
-    private final FilmStorage storage;
 
     @Autowired
     public FilmService(FilmStorage storage, UserStorage userStorage) {
@@ -64,22 +63,6 @@ public class FilmService {
                 + " Year:{}", count, genreId, year);
 
         return storage.getTopFilms(count, genreId, year);
-    }
-
-    public List<Film> getDirectorFilms(int directorId, String sortBy) {
-        List<Film> directorFilms = storage.getFilmDirector(
-                directorId,
-                FilmSortBy.valueOf(sortBy.toUpperCase())
-        );
-
-        if (directorFilms.isEmpty()) {
-            String error = String.format("Director with ID:%d not found", directorId);
-            log.error(error);
-            throw new NotFoundException(error);
-        }
-
-        log.info("Director Films\n{}", directorFilms);
-        return directorFilms;
     }
 
     public List<Film> getDirectorFilms(int directorId, String sortBy) {
