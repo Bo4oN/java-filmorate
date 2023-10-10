@@ -81,6 +81,10 @@ public class FilmService {
         return directorFilms;
     }
 
+    public List<Film> searchFilms(String query, String by) {
+        return storage.searchFilms(query, by);
+    }
+
     private void validationFilm(Film film) {
         if (film.getReleaseDate().isBefore(BIRTHDAY_MOVIE)) {
             log.debug("Не валидная дата премьеры.");
