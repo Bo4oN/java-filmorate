@@ -15,15 +15,21 @@ import org.springframework.test.context.junit4.SpringRunner;
 import ru.yandex.practicum.filmorate.model.Director;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
+import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.DirectorDaoStorage.DirectorDbStorage;
 import ru.yandex.practicum.filmorate.storage.DirectorDaoStorage.DirectorRowMapper;
 import ru.yandex.practicum.filmorate.storage.DirectorDaoStorage.DirectorStorage;
+import ru.yandex.practicum.filmorate.storage.FeedDBStorage.FeedDBStorage;
+import ru.yandex.practicum.filmorate.storage.FeedDBStorage.FeedStorage;
 import ru.yandex.practicum.filmorate.storage.FilmDaoStorage.FilmDbStorage;
 import ru.yandex.practicum.filmorate.storage.FilmDaoStorage.FilmRowMapper;
 import ru.yandex.practicum.filmorate.storage.FilmDaoStorage.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.GenreDaoStorage.GenreDbStorage;
 import ru.yandex.practicum.filmorate.storage.GenreDaoStorage.GenreRowMapper;
 import ru.yandex.practicum.filmorate.storage.GenreDaoStorage.GenreStorage;
+import ru.yandex.practicum.filmorate.storage.UserDaoStorage.UserDbStorage;
+import ru.yandex.practicum.filmorate.storage.UserDaoStorage.UserRowMapper;
+import ru.yandex.practicum.filmorate.storage.UserDaoStorage.UserStorage;
 
 import javax.sql.DataSource;
 import java.util.List;
@@ -56,7 +62,9 @@ class FilmServiceTest {
             .build();
     private final JdbcTemplate jdbc = new JdbcTemplate(dataSource);
     private final RowMapper<Genre> genreRowMapper = new GenreRowMapper();
+    private final RowMapper<User> userRowMapper = new UserRowMapper();
     private final RowMapper<Director> directorRowMapper = new DirectorRowMapper();
+    private final FeedStorage feedStorage = new FeedDBStorage(jdbc);
     private final GenreStorage genreStorage =
             new GenreDbStorage(
                     jdbc,
@@ -67,19 +75,23 @@ class FilmServiceTest {
                     jdbc,
                     directorRowMapper
             );
-    private final RowMapper<Film> filmRowMapper =
-            new FilmRowMapper(
-                    genreStorage,
-                    directorStorage
+    private final RowMapper<Film> filmRowMapper = new FilmRowMapper(genreStorage, directorStorage);
+    private final UserStorage userStorage =
+            new UserDbStorage(
+                    jdbc,
+                    userRowMapper,
+                    filmRowMapper,
+                    feedStorage
             );
     private final FilmStorage filmStorage =
             new FilmDbStorage(
                     jdbc,
                     genreStorage,
                     directorStorage,
-                    filmRowMapper
+                    filmRowMapper,
+                    feedStorage
             );
-    private final FilmService service = new FilmService(filmStorage);
+    private final FilmService service = new FilmService(filmStorage, userStorage);
     private final DirectorService directorService = new DirectorService(directorStorage);
 
     @Test
@@ -89,6 +101,16 @@ class FilmServiceTest {
 
         List<Film> directorFilms = service.getDirectorFilms(director.getId(), "year");
         assertEquals("Lolita", directorFilms.get(0).getName());
+        assertEquals("Eyes Wide Shut", directorFilms.get(7).getName());
+    }
+
+    @Test
+    void getDirectorFilmsSortByLikes() {
+        Director director = directorService.get(1);
+        assertEquals("Stanley Kubrick", director.getName());
+
+        List<Film> directorFilms = service.getDirectorFilms(director.getId(), "likes");
+        assertEquals("2001: A Space Odyssey", directorFilms.get(0).getName());
         assertEquals("Eyes Wide Shut", directorFilms.get(7).getName());
     }
 
