@@ -1,5 +1,7 @@
 package ru.yandex.practicum.filmorate.model;
 
+import lombok.Getter;
+
 import java.util.Map;
 
 /**
@@ -8,6 +10,7 @@ import java.util.Map;
 
  * @see ru.yandex.practicum.filmorate.storage.FilmDaoStorage.FilmDbStorage#getFilmDirector(int, FilmSortBy)
  */
+@Getter
 public enum FilmSortBy {
     YEAR(Map.of(
             "SELECT", " EXTRACT(YEAR FROM CAST (F.release_date as DATE)) YEAR_RELEASE ",
@@ -31,7 +34,4 @@ public enum FilmSortBy {
         this.params = params;
     }
 
-    public Map<String, String> getParams() {
-        return params;
-    }
 }

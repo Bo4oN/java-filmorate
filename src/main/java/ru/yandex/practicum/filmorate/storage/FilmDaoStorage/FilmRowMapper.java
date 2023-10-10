@@ -17,6 +17,7 @@ import java.util.LinkedHashSet;
 @Component
 @RequiredArgsConstructor
 public class FilmRowMapper implements RowMapper<Film> {
+
     private final GenreStorage genreStorage;
     private final DirectorStorage directorStorage;
 
