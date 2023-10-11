@@ -102,8 +102,12 @@ public class FilmDbStorage implements FilmStorage {
 
     @Override
     public void addLike(int filmId, int userId) {
-        String sqlQuery = "INSERT INTO LIKES (FILM_ID, USER_ID) VALUES ( ?, ? )";
-        jdbcTemplate.update(sqlQuery, filmId, userId);
+        String sqlQuery1 = "UPDATE LIKES SET FILM_ID = ? WHERE USER_ID = ?";
+        int rowCount = jdbcTemplate.update(sqlQuery1, filmId, userId);
+        if (rowCount == 0) {
+            String sqlQuery = "INSERT INTO LIKES (FILM_ID, USER_ID) VALUES ( ?, ? )";
+            jdbcTemplate.update(sqlQuery, filmId, userId);
+        }
         feedStorage.addLikeEvent(userId, filmId);
     }
 
