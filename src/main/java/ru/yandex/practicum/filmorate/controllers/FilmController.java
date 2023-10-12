@@ -3,16 +3,22 @@ package ru.yandex.practicum.filmorate.controllers;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.*;
-import ru.yandex.practicum.filmorate.model.Entity;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.RestController;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.service.FilmService;
 import ru.yandex.practicum.filmorate.service.UserService;
 
 import javax.validation.Valid;
-
 import javax.validation.constraints.Positive;
-
 import java.util.List;
 
 @Slf4j
@@ -60,7 +66,7 @@ public class FilmController {
 
     @ResponseBody
     @PutMapping("/{id}/like/{userId}")
-    public Entity addLike(@PathVariable int id, @PathVariable int userId) {
+    public Film addLike(@PathVariable int id, @PathVariable int userId) {
         log.info("Запрос на добавление лайка от пользователя с ID - {}.", userId);
         filmService.addLike(id, userId);
         return filmService.getFilm(id);
@@ -68,7 +74,7 @@ public class FilmController {
 
     @ResponseBody
     @DeleteMapping("/{id}/like/{userId}")
-    public Entity deleteLike(@PathVariable int id, @PathVariable int userId) {
+    public Film deleteLike(@PathVariable int id, @PathVariable int userId) {
         log.info("Запрос на удаление лайка от пользователя с ID - {}.", userId);
         filmService.deleteLike(id, userId);
         userService.getUser(userId);
@@ -77,7 +83,7 @@ public class FilmController {
 
     /**
      * Возвращает список самых популярных фильмов указанного жанра за нужный год.
-
+     *
      * @param count   Лимит фильмов (по умолчанию 10)
      * @param genreId идентификатор жанра (только положительное число)
      * @param year    год релиза (только положительное число)
