@@ -1,17 +1,23 @@
 package ru.yandex.practicum.filmorate.controllers;
 
-import java.util.List;
-
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import ru.yandex.practicum.filmorate.model.Entity;
-import ru.yandex.practicum.filmorate.model.Film;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.RestController;
 import ru.yandex.practicum.filmorate.model.Event;
+import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.User;
-import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.service.UserService;
 
 import javax.validation.Valid;
+import java.util.List;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -23,21 +29,21 @@ public class UserController {
 
     @ResponseBody
     @PostMapping
-    public Entity addUser(@Valid @RequestBody User user) {
+    public User addUser(@Valid @RequestBody User user) {
         log.info("Получен запрос на добавление пользователя.");
         return userService.addUser(user);
     }
 
     @ResponseBody
     @PutMapping
-    public Entity updateUsers(@Valid @RequestBody User user) {
+    public User updateUsers(@Valid @RequestBody User user) {
         log.info("Получен запрос на обновление пользователя.");
         return userService.updateUser(user);
     }
 
     @ResponseBody
     @GetMapping("/{id}")
-    public Entity getUserById(@PathVariable String id) {
+    public User getUserById(@PathVariable String id) {
         log.info("Получен запрос на получение пользователя с ID - {}.", id);
         return userService.getUser(Integer.parseInt(id));
     }
@@ -57,13 +63,13 @@ public class UserController {
 
     @ResponseBody
     @PutMapping("/{id}/friends/{friendId}")
-    public Entity addFriend(@PathVariable String id, @PathVariable String friendId) {
+    public User addFriend(@PathVariable String id, @PathVariable String friendId) {
         return userService.addFriend(Integer.parseInt(id), Integer.parseInt(friendId));
     }
 
     @ResponseBody
     @DeleteMapping("/{id}/friends/{friendId}")
-    public Entity deleteFriend(@PathVariable String id, @PathVariable String friendId) {
+    public User deleteFriend(@PathVariable String id, @PathVariable String friendId) {
         return userService.deleteFriend(Integer.parseInt(id), Integer.parseInt(friendId));
     }
 
