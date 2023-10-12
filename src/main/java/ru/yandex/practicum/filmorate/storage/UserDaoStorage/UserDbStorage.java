@@ -9,10 +9,14 @@ import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
 import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.exceptions.NotFoundException;
-import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.model.*;
+import ru.yandex.practicum.filmorate.storage.GenreDaoStorage.GenreStorage;
+import ru.yandex.practicum.filmorate.storage.FeedDBStorage.FeedStorage;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.LinkedHashSet;
 import java.util.List;
 
 @Repository
@@ -21,6 +25,8 @@ import java.util.List;
 public class UserDbStorage implements UserStorage {
 
     private final JdbcTemplate jdbcTemplate;
+    private final GenreStorage genreStorage;
+    private final FeedStorage feedStorage;
 
     @Override
     public User add(User data) {
@@ -55,9 +61,15 @@ public class UserDbStorage implements UserStorage {
     }
 
     @Override
-    public User delete(int id) {
-        String sqlQuery = "DELETE FROM users where user_id=?;";
-        return  jdbcTemplate.queryForObject(sqlQuery, new UserMapper(), id);
+    public void delete(int id) {
+        String sqlQuery = "DELETE FROM users " +
+                "WHERE user_id = " + id;
+        int row = jdbcTemplate.update(sqlQuery);
+        if (row == 0) {
+            log.error("Пользователь с id:" + id + " успешно удален.");
+            throw new NotFoundException("Пользователь с id:" + id + " не найден.");
+        }
+        log.info("Пользователь с id:" + id + " успешно удален.");
     }
 
     @Override
@@ -99,6 +111,7 @@ public class UserDbStorage implements UserStorage {
         }
         String sqlQuery = "INSERT INTO friends (USER1_ID, USER2_ID) VALUES ( ?, ? );";
         jdbcTemplate.update(sqlQuery, firstId, secondId);
+        feedStorage.addFriendEvent(firstId, secondId);
         log.info("Пользователи с ID - " + firstId + " и ID - " + secondId + " теперь друзья.");
         return get(secondId);
     }
@@ -107,13 +120,14 @@ public class UserDbStorage implements UserStorage {
     public User deleteFriend(int firstId, int secondId) {
         String sqlQuery = "DELETE FROM friends WHERE user1_id = ? AND user2_id = ?;";
         jdbcTemplate.update(sqlQuery, firstId, secondId);
+        feedStorage.deleteFriendEvent(firstId, secondId);
         log.info("Пользователи с ID - " + firstId + " и ID - " + secondId + " больше не друзья.");
         return get(secondId);
     }
 
-
     @Override
     public List<User> getFriendsList(int id) {
+        get(id);
         String sqlQuery = "SELECT user_id, name, login, email, birthday" +
                 " FROM users WHERE USER_ID" +
                 " IN (SELECT USER2_ID FROM friends WHERE USER1_ID = ?);";
@@ -128,5 +142,73 @@ public class UserDbStorage implements UserStorage {
                 " WHERE friends.USER1_ID = ? AND friends.USER2_ID IN " +
                 " (SELECT USER2_ID FROM friends WHERE USER1_ID = ?); ";
         return jdbcTemplate.query(sqlQuery, new UserMapper(), firstId, secondId);
+    }
+
+    @Override
+    public List<Film> getRecommendations(int id) {
+        try {
+            get(id); // проверка существования пользователя
+
+            String sql = "SELECT l2.user_id " +
+                    "FROM likes l1 " +
+                    "JOIN likes l2 ON l1.film_id = l2.film_id AND l1.user_id <> l2.user_id " +
+                    "WHERE l1.user_id = ? " +
+                    "GROUP BY l2.user_id " +
+                    "ORDER BY COUNT(DISTINCT l1.film_id) DESC " +
+                    "LIMIT 1; "; // возвращает id похожего пользователя
+
+            Integer user2Id = jdbcTemplate.queryForObject(sql, Integer.class, id);
+
+            String sql2 = "SELECT DISTINCT film_id " +
+                    "FROM likes " +
+                    "WHERE user_id = ? " +
+                    "AND film_id NOT IN ( " +
+                    "SELECT film_id " +
+                    "FROM likes " +
+                    "WHERE user_id = ?); "; // возвращает список id фильмов
+
+            List<Integer> recommendedFilmsId = jdbcTemplate.queryForList(sql2, Integer.class, user2Id, id);
+            return parseIntListToFilmList(recommendedFilmsId);
+
+        } catch (EmptyResultDataAccessException e) {
+            return List.of();
+        }
+    }
+
+    public List<Film> parseIntListToFilmList(List<Integer> recommendedFilmsId) {
+        List<Film> recommendedFilms = new ArrayList<>();
+
+        String filmSql = "SELECT FILM_ID, FILMS.NAME AS FN, DESCRIPTION, DURATION, RELEASE_DATE, " +
+                "MPA.MPA_ID, MPA.NAME AS MN  " +
+                "FROM FILMS LEFT JOIN MPA ON FILMS.MPA_ID = MPA.MPA_ID WHERE FILM_ID = ? " +
+                "GROUP BY FILMS.FILM_ID, FN, DESCRIPTION, DURATION, RELEASE_DATE, MPA.MPA_ID, MN";
+
+        for (Integer filmId : recommendedFilmsId) {
+            Film film = jdbcTemplate.queryForObject(filmSql, new FilmMapper(), filmId);
+            recommendedFilms.add(film);
+        }
+
+        return recommendedFilms;
+    }
+
+    public class FilmMapper implements RowMapper<Film> {
+
+        @Override
+        public Film mapRow(ResultSet rs, int rowNum) throws SQLException {
+            Film film = new Film(rs.getInt("film_id"),
+                    rs.getString("fn"),
+                    rs.getString("description"),
+                    rs.getDate("release_date").toLocalDate(),
+                    rs.getLong("duration"),
+                    new Mpa(rs.getInt("mpa_id"), rs.getString("mn"))
+            );
+            LinkedHashSet<Genre> set = new LinkedHashSet<>(genreStorage.getGenresOfFilm(rs.getInt("film_id")));
+            film.setGenres(set);
+            return film;
+        }
+    }
+
+    public List<Event> getUserFeed(int id) {
+        return feedStorage.getUserFeed(id);
     }
 }

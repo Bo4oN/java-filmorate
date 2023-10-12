@@ -5,13 +5,15 @@ import lombok.Data;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Positive;
+import javax.validation.constraints.PositiveOrZero;
 import javax.validation.constraints.Size;
 import java.time.LocalDate;
 import java.util.LinkedHashSet;
 
 @Data
-public class Film extends Entity {
-
+public class Film {
+    @PositiveOrZero
+    private int id;
     @NotNull
     @NotBlank
     private String name;
@@ -23,6 +25,7 @@ public class Film extends Entity {
     @NotNull
     private Mpa mpa;
     private LinkedHashSet<Genre> genres;
+    private LinkedHashSet<Director> directors;
 
     public Film(int id, String name, String description, LocalDate releaseDate, Long duration, Mpa mpa) {
         this.setId(id);

@@ -1,12 +1,16 @@
 package ru.yandex.practicum.filmorate.model;
 
+import lombok.AllArgsConstructor;
 import lombok.Data;
 
 import javax.validation.constraints.*;
 import java.time.LocalDate;
 
+@AllArgsConstructor
 @Data
-public class User extends Entity {
+public class User {
+    @PositiveOrZero
+    private int id;
     @Email
     @NotEmpty
     private String email;
@@ -16,12 +20,4 @@ public class User extends Entity {
     private String name;
     @PastOrPresent
     private LocalDate birthday;
-
-    public User(int id, String email, String login, String name, LocalDate birthday) {
-        this.setId(id);
-        this.email = email;
-        this.login = login;
-        this.name = name;
-        this.birthday = birthday;
-    }
 }
